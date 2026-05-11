@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>舞鶴市 グルメマップ</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+        body { margin: 0; padding: 20px; font-family: "Helvetica Neue", Arial, sans-serif; }
+        .info-window { font-size: 14px; }
+        .info-window img { width: 100px; display: block; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>舞鶴市 飲食店マップ</h1>
+    <p>ホットペッパーAPIから取得した周辺の飲食店を表示します。</p>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // --- 設定 ---
+        const API_KEY = '545ea2faea49bae3'; // ここに取得したAPIキーを入力
+        const MAIZURU_LAT = 35.4751;     // 舞鶴市役所付近の緯度
+        const MAIZURU_LNG = 135.3338;    // 舞鶴市役所付近の経度
+
+        // 地図の初期化
+        const map = L.map('map').setView([MAIZURU_LAT, MAIZURU_LNG], 14);
+
+        // 背景地図（OpenStreetMap）の読み込み
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // --- ホットペッパーAPIからデータを取得する関数 ---
+        function fetchGourmetData() {
+            // APIのリクエストURL（JSONP形式を指定するため format=jsonp & callback=handleResponse）
+            const url = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=${API_KEY}&lat=${MAIZURU_LAT}&lng=${MAIZURU_LNG}&range=5&count=50&format=jsonp&callback=handleResponse`;
+
+            // scriptタグを作成してJSONPリクエストを実行
+            const script = document.createElement('script');
+            script.src = url;
+            document.body.appendChild(script);
+        }
+
+        // --- APIレスポンスを処理するコールバック関数 ---
+        function handleResponse(data) {
+            const shops = data.results.shop;
+
+            if (!shops || shops.length === 0) {
+                alert("店舗情報が見つかりませんでした。APIキーを確認してください。");
+                return;
+            }
+
+            shops.forEach(shop => {
+                // 各店舗の座標にマーカーを設置
+                const marker = L.marker([shop.lat, shop.lng]).addTo(map);
+                
+                // ポップアップ（吹き出し）の内容を設定
+                const popupContent = `
+                    <div class="info-window">
+                        <strong>${shop.name}</strong><br>
+                        ${shop.genre.name}<br>
+                        <img src="${shop.photo.pc.m}" alt="${shop.name}">
+                        <a href="${shop.urls.pc}" target="_blank">詳細を見る (ホットペッパー)</a>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+            });
+        }
+
+        // 実行
+        if (API_KEY === 'YOUR_API_KEY') {
+            alert("コード内の 'YOUR_API_KEY' を自分のAPIキーに書き換えてください。");
+        } else {
+            fetchGourmetData();
+        }
+    </script>
+
+</body>
+</html>
