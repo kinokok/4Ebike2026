@@ -3,85 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>舞鶴市 グルメマップ</title>
-    
+    <title>舞鶴市限定地図</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
     <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: sans-serif;
+        }
+        
         #map {
             width: 100%;
             height: 600px;
+            margin-top: 20px;
+            border: 1px solid #ccc;
         }
-        body { margin: 0; padding: 20px; font-family: "Helvetica Neue", Arial, sans-serif; }
-        .info-window { font-size: 14px; }
-        .info-window img { width: 100px; display: block; margin-top: 5px; }
+        
+        .search-container {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .search-container input, .search-container select, .search-container button {
+            padding: 8px 12px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .search-container button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .search-container button:hover {
+            background-color: #45a049;
+        }
+        
+        .info-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: none;
+        }
+        
+        .info-box.visible {
+            display: block;
+        }
+        
+        .leaflet-popup-content {
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>舞鶴市 飲食店マップ</h1>
-    <p>ホットペッパーAPIから取得した周辺の飲食店を表示します。</p>
+    <h1>舞鶴市の範囲に限定した地図</h1>
+    <p>舞鶴市外へはスクロールやズームアウトができない設定です。</p>
+    
+    <div class="search-container">
+        <h3>ホットペッパーから検索</h3>
+        <div>
+            <input type="text" id="searchKeyword" placeholder="キーワード（例：ラーメン、焼肉）" value="">
+            <select id="searchGenre">
+                <option value="">--- ジャンル選択 ---</option>
+                <option value="G001">和食</option>
+                <option value="G002">洋食</option>
+                <option value="G003">中華</option>
+                <option value="G004">イタリアン</option>
+                <option value="G005">フレンチ</option>
+                <option value="G006">カフェ</option>
+                <option value="G007">ラーメン</option>
+                <option value="G008">焼肉</option>
+                <option value="G009">寿司・海鮮</option>
+                <option value="G010">居酒屋</option>
+                <option value="G011">焼き鳥</option>
+                <option value="G012">パスタ</option>
+                <option value="G013">スイーツ</option>
+            </select>
+            <select id="searchRange">
+                <option value="300">300m</option>
+                <option value="500" selected>500m</option>
+                <option value="1000">1000m</option>
+                <option value="2000">2000m</option>
+                <option value="3000">3000m</option>
+            </select>
+            <button onclick="searchRestaurants()">検索</button>
+            <button onclick="clearMarkers()">クリア</button>
+        </div>
+        <div id="searchInfo" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+        <div id="searchStatus"></div>
+    </div>
+    
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
     <script>
-        // --- 設定 ---
-        const API_KEY = '545ea2faea49bae3'; // ここに取得したAPIキーを入力
-        const MAIZURU_LAT = 35.4751;     // 舞鶴市役所付近の緯度
-        const MAIZURU_LNG = 135.3338;    // 舞鶴市役所付近の経度
-
+        // =====================================================
+        // 設定
+        // =====================================================
+        // TODO: ホットペッパーAPIのキーを入力してください
+        // https://webservice.recruit.co.jp/ から取得できます
+        const HOTPEPPER_API_KEY = '545ea2faea49bae3';
+        
+        // 舞鶴市を囲む四角形の範囲（南西と北東の座標）
+        const bounds = [
+            [35.28, 135.15], 
+            [35.61, 135.62]
+        ];
+        
+        // 舞鶴市の中心座標
+        const maizuruCenter = [35.4751, 135.3338];
+        
+        // マーカーグループ管理用
+        let restaurantMarkers = [];
+        let restaurantMarkerGroup = L.featureGroup();
+        
+        // =====================================================
         // 地図の初期化
-        const map = L.map('map').setView([MAIZURU_LAT, MAIZURU_LNG], 14);
+        // =====================================================
+        const map = L.map('map', {
+            center: maizuruCenter,
+            zoom: 12,
+            minZoom: 11,
+            maxBounds: bounds,
+            maxBoundsViscosity: 1.0
+        });
 
-        // 背景地図（OpenStreetMap）の読み込み
+        // タイルレイヤーの追加
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // --- ホットペッパーAPIからデータを取得する関数 ---
-        function fetchGourmetData() {
-            // APIのリクエストURL（JSONP形式を指定するため format=jsonp & callback=handleResponse）
-            const url = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=${API_KEY}&lat=${MAIZURU_LAT}&lng=${MAIZURU_LNG}&range=5&count=50&format=jsonp&callback=handleResponse`;
+        // マーカーグループを地図に追加
+        restaurantMarkerGroup.addTo(map);
 
-            // scriptタグを作成してJSONPリクエストを実行
-            const script = document.createElement('script');
-            script.src = url;
-            document.body.appendChild(script);
-        }
-
-        // --- APIレスポンスを処理するコールバック関数 ---
-        function handleResponse(data) {
-            const shops = data.results.shop;
-
-            if (!shops || shops.length === 0) {
-                alert("店舗情報が見つかりませんでした。APIキーを確認してください。");
+        // =====================================================
+        // ホットペッパーAPI検索関数
+        // =====================================================
+        async function searchRestaurants() {
+            const keyword = document.getElementById('searchKeyword').value;
+            const genre = document.getElementById('searchGenre').value;
+            const range = document.getElementById('searchRange').value;
+            const statusEl = document.getElementById('searchStatus');
+            const infoEl = document.getElementById('searchInfo');
+            
+            // キーワードまたはジャンルのどちらか一つは必須
+            if (!keyword && !genre) {
+                statusEl.innerHTML = '⚠️ キーワードまたはジャンルを選択してください。';
+                statusEl.style.color = 'orange';
                 return;
             }
-
-            shops.forEach(shop => {
-                // 各店舗の座標にマーカーを設置
-                const marker = L.marker([shop.lat, shop.lng]).addTo(map);
+            
+            // APIキーの確認
+            if (HOTPEPPER_API_KEY === 'YOUR_API_KEY_HERE') {
+                statusEl.innerHTML = '❌ エラー: ホットペッパーAPIのキーが設定されていません。';
+                statusEl.style.color = 'red';
+                return;
+            }
+            
+            statusEl.innerHTML = '🔍 検索中...';
+            statusEl.style.color = 'blue';
+            
+            try {
+                // 現在のマップ中心から検索
+                const center = map.getCenter();
+                const lat = center.lat;
+                const lng = center.lng;
                 
-                // ポップアップ（吹き出し）の内容を設定
-                const popupContent = `
-                    <div class="info-window">
-                        <strong>${shop.name}</strong><br>
-                        ${shop.genre.name}<br>
-                        <img src="${shop.photo.pc.m}" alt="${shop.name}">
-                        <a href="${shop.urls.pc}" target="_blank">詳細を見る (ホットペッパー)</a>
-                    </div>
-                `;
-                marker.bindPopup(popupContent);
-            });
+                infoEl.innerHTML = `📍 検索中心: ${lat.toFixed(4)}, ${lng.toFixed(4)} | 検索範囲: ${range}m`;
+                
+                // ホットペッパーグルメサーチAPI呼び出し
+                let apiUrl = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=${HOTPEPPER_API_KEY}&lat=${lat}&lng=${lng}&range=${range}&format=json&count=100`;
+                
+                // キーワード検索
+                if (keyword) {
+                    apiUrl += `&keyword=${encodeURIComponent(keyword)}`;
+                }
+                
+                // ジャンル検索
+                if (genre) {
+                    apiUrl += `&genre=${genre}`;
+                }
+                
+                // CORS対応：プロキシを使用
+                const url = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // 既存のマーカーをクリア
+                clearMarkers();
+                
+                if (!data.results || !data.results.shop) {
+                    let searchTerm = keyword || genre;
+                    statusEl.innerHTML = `⚠️ 「${searchTerm}」の検索結果がありません。<br>別のキーワードやジャンル、検索範囲を試してください。`;
+                    statusEl.style.color = 'orange';
+                    return;
+                }
+                
+                const shops = Array.isArray(data.results.shop) ? data.results.shop : [data.results.shop];
+                let addedCount = 0;
+                
+                // 各店舗をマーカーとして追加
+                shops.forEach(shop => {
+                    if (!shop.lat || !shop.lng) return;
+                    
+                    const lat = parseFloat(shop.lat);
+                    const lng = parseFloat(shop.lng);
+                    
+                    // マーカーを作成
+                    const marker = L.marker([lat, lng])
+                        .bindPopup(createPopupContent(shop));
+                    
+                    restaurantMarkerGroup.addLayer(marker);
+                    restaurantMarkers.push(marker);
+                    addedCount++;
+                });
+                
+                if (addedCount === 0) {
+                    statusEl.innerHTML = `⚠️ 舞鶴市内に該当する店舗がありません。`;
+                    statusEl.style.color = 'orange';
+                } else {
+                    statusEl.innerHTML = `✅ 検索完了: ${addedCount}件の店舗が見つかりました。`;
+                    statusEl.style.color = 'green';
+                    
+                    // マップをズームしてマーカーすべてを表示
+                    if (restaurantMarkers.length > 0) {
+                        map.fitBounds(restaurantMarkerGroup.getBounds().pad(0.1));
+                    }
+                }
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                statusEl.innerHTML = `❌ エラー: ${error.message}`;
+                statusEl.style.color = 'red';
+            }
         }
 
-        // 実行
-        if (API_KEY === 'YOUR_API_KEY') {
-            alert("コード内の 'YOUR_API_KEY' を自分のAPIキーに書き換えてください。");
-        } else {
-            fetchGourmetData();
+        // =====================================================
+        // ポップアップコンテンツ作成関数
+        // =====================================================
+        function createPopupContent(shop) {
+            let content = `<div style="width: 200px; font-size: 12px;">`;
+            content += `<strong>${shop.name}</strong><br>`;
+            
+            if (shop.genre && shop.genre.name) {
+                content += `<small>ジャンル: ${shop.genre.name}</small><br>`;
+            }
+            
+            if (shop.address) {
+                content += `<small>住所: ${shop.address}</small><br>`;
+            }
+            
+            if (shop.tel) {
+                content += `<small>電話: ${shop.tel}</small><br>`;
+            }
+            
+            if (shop.url) {
+                content += `<a href="${shop.url}" target="_blank">詳細を見る</a>`;
+            }
+            
+            content += `</div>`;
+            return content;
         }
+
+        // =====================================================
+        // マーカークリア関数
+        // =====================================================
+        function clearMarkers() {
+            restaurantMarkerGroup.clearLayers();
+            restaurantMarkers = [];
+            document.getElementById('searchStatus').innerHTML = '';
+        }
+
+        // ページ読み込み時のサンプル検索
+        window.addEventListener('load', () => {
+            // 初期状態では検索しない（APIキーが必要のため）
+            console.log('地図が読み込まれました。上記の検索フォームから検索してください。');
+        });
     </script>
 
 </body>
