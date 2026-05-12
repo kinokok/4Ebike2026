@@ -177,10 +177,10 @@ const routeData = {
   origin: {
 
     // 緯度
-    lat: 35.681236,
+    lat: ,
 
     // 経度
-    lng: 139.767125
+    lng: 
   },
 
   // 経由地（複数対応）
@@ -194,8 +194,8 @@ const routeData = {
     */
 
     {
-      lat: 35.698683,
-      lng: 139.774219
+      lat: ,
+      lng: 
     }
 
   ],
@@ -204,10 +204,10 @@ const routeData = {
   destination: {
 
     // 緯度
-    lat: 35.714765,
+    lat: ,
 
     // 経度
-    lng: 139.796655
+    lng: 
   }
 };
 
