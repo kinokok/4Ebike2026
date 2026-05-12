@@ -13,16 +13,16 @@ const tagGroups = {
 
 const tagGroups = {
   "観光・歴史": [
-    { 
-      key: "historic", type: "monument", 
+    {
+      key: "historic", type: "monument",
       label: "<b>記念碑</b>（舞鶴重砲兵連隊跡 / 舞鶴東～小浜西 開通記念碑）",
       spots: [
         { name: "舞鶴重砲兵連隊跡", lat: 35.44923347687097, lon: 135.34080402210375 },
         { name: "舞鶴東～小浜西 開通記念碑", lat: null, lon: null },
       ]
     },
-    { 
-      key: "historic", type: "memorial", 
+    {
+      key: "historic", type: "memorial",
       label: "<b>慰霊碑</b>（四面山忠魂碑 / 舞鶴空襲学徒犠牲者慰霊碑 / 舞鶴海軍墓地）",
       spots: [
         { name: "四面山忠魂碑", lat: null, lon: null },
@@ -30,8 +30,8 @@ const tagGroups = {
         { name: "舞鶴海軍墓地", lat: null, lon: null },
       ]
     },
-    { 
-      key: "historic", type: "castle", 
+    {
+      key: "historic", type: "castle",
       label: "<b>城</b>（浜村城跡 / 溝尻城跡 / 行永城跡）",
       spots: [
         { name: "浜村城跡", lat: null, lon: null },
@@ -39,8 +39,8 @@ const tagGroups = {
         { name: "行永城跡", lat: null, lon: null },
       ]
     },
-    { 
-      key: "tourism", type: "museum", 
+    {
+      key: "tourism", type: "museum",
       label: "<b>博物館</b>（舞鶴の電気発祥の地 / 海軍記念館 / ルーシーちゃんの魔法の玩具博物館）",
       spots: [
         { name: "舞鶴の電気発祥の地", lat: null, lon: null },
@@ -48,13 +48,12 @@ const tagGroups = {
         { name: "ルーシーちゃんの魔法の玩具博物館", lat: null, lon: null },
       ]
     },
-    { 
-      key: "tourism", type: "attraction", 
+    {
+      key: "tourism", type: "attraction",
       label: "<b>観光地</b>",
       spots: []
     },
   ],
-
   "飲食": [
     { key: "amenity", type: "restaurant", label: "<b>レストラン</b>（とと楽 / Cafe&Deli AZUR）" },
     { key: "amenity", type: "cafe", label: "<b>カフェ</b>（チャイム / こもれび / GOOD SOUND COFFEE / 木馬）" },
@@ -91,266 +90,182 @@ const TagSelector = ({ onRunNavigation }) => {
     );
   };
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    try {
-      await onRunNavigation(selectedTags, selectedEndpoint, randomroute);
-    } finally {
-      setLoading(false);
+  /*
+  ========================================
+  Google Maps URL生成
+  ========================================
+  */
+  function createGoogleMapsUrl(data) {
+    const origin = `${data.origin.lat},${data.origin.lng}`;
+    const destination = `${data.destination.lat},${data.destination.lng}`;
+
+    let url = "https://www.google.com/maps/dir/?api=1";
+    url += `&origin=${origin}`;
+    url += `&destination=${destination}`;
+
+    if (data.waypoints.length > 0) {
+      const waypointString = data.waypoints
+        .map(point => `${point.lat},${point.lng}`)
+        .join("|");
+      url += `&waypoints=${waypointString}`;
     }
+
+    url += "&travelmode=bicycling";
+    return url;
+  }
+
+  const handleSubmit = () => {
+    // チェックされたタグのspotsをまとめて取得（lat/lonがnullのものは除外）-國重
+    const selectedSpots = Object.values(tagGroups)
+      .flat()
+      .filter((tag) => selectedTags.includes(`${tag.key}=${tag.type}`))
+      .flatMap((tag) => tag.spots ?? [])
+      .filter((spot) => spot.lat !== null && spot.lon !== null);
+
+    /*
+    ========================================
+    ここに他メンバーから受け取った
+    ルート情報が入る
+    ========================================
+    */
+    const routeData = {
+      // 現在地（TODO: Geolocation APIで取得予定）
+      origin: {
+        lat: 35.495998,
+        lng: 135.439747,
+      },
+      // 経由地（selectedSpotsから生成）
+      waypoints: selectedSpots.map((s) => ({
+        lat: s.lat,
+        lng: s.lon,
+      })),
+      // 目的地
+      destination: {
+        lat: selectedEndpoint.lat,
+        lng: selectedEndpoint.lon,
+      },
+    };
+
+    // Google Maps URL生成
+    const mapsUrl = createGoogleMapsUrl(routeData);
+
+    // GoogleマップをSP/PCで開く（アプリがあればアプリが起動）
+    window.open(mapsUrl, "_blank");
   };
 
   return (
     <div style={{ padding: "0.2rem", textAlign: "left" }}>
-          <h2>ルート生成をランダムにしますか？</h2>
-<div style={{ display: "flex", justifyContent: "center", marginBottom: "1em" }}>
-  <label
-    style={{
-      display: "flex",
-      flexDirection: "row",
-      alignItems: "center",
-      gap: "0.5em",
-    }}
-  >
-    <input
-      type="checkbox"
-      checked={randomroute}
-      onChange={(e) => setRandomroute(e.target.checked)}
-      disabled={loading}
-      style={{
-        width: "16px",
-        height: "16px",
-        flexShrink: 0,
-        marginTop: "0.2em",
-      }}
-    />
-    <span
-      className="tag-label"
-      dangerouslySetInnerHTML={{ __html: "<b>ランダムにルートを作成</b>" }}
-    />
-  </label>
-</div>
+      <h2>ルート生成をランダムにしますか？</h2>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "1em" }}>
+        <label
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "0.5em",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={randomroute}
+            onChange={(e) => setRandomroute(e.target.checked)}
+            disabled={loading}
+            style={{
+              width: "16px",
+              height: "16px",
+              flexShrink: 0,
+              marginTop: "0.2em",
+            }}
+          />
+          <span
+            className="tag-label"
+            dangerouslySetInnerHTML={{ __html: "<b>ランダムにルートを作成</b>" }}
+          />
+        </label>
+      </div>
+
       <h2>行きたい場所のカテゴリを選んでください</h2>
       {Object.entries(tagGroups).map(([group, tags]) => (
-      <fieldset key={group}>
-        <legend><strong>{group}</strong></legend>
-        {tags.map(({ key, type, label }) => {
-          const tagStr = `${key}=${type}`;
-          return (
-            <label
-              key={tagStr}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "flex-start",
-                gap: "0.5em",
-                width: "100%",
-                marginBottom: "1em", // 行間
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={selectedTags.includes(tagStr)}
-                onChange={() => handleTagChange(tagStr)}
-                disabled={loading}
+        <fieldset key={group}>
+          <legend><strong>{group}</strong></legend>
+          {tags.map(({ key, type, label }) => {
+            const tagStr = `${key}=${type}`;
+            return (
+              <label
+                key={tagStr}
                 style={{
-                  width: "16px",
-                  height: "16px",
-                  flexShrink: 0,
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                  gap: "0.5em",
+                  width: "100%",
                   marginBottom: "1em",
                 }}
-              />
-              <span
-                className="tag-label"
-                dangerouslySetInnerHTML={{ __html: label }}
-              />
-            </label>
-          );
-        })}
-      </fieldset>
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedTags.includes(tagStr)}
+                  onChange={() => handleTagChange(tagStr)}
+                  disabled={loading}
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    flexShrink: 0,
+                    marginBottom: "1em",
+                  }}
+                />
+                <span
+                  className="tag-label"
+                  dangerouslySetInnerHTML={{ __html: label }}
+                />
+              </label>
+            );
+          })}
+        </fieldset>
       ))}
 
       <h2>目的地を選択してください</h2>
       {Object.entries(endpointGroups).map(([group, endLocation]) => (
-      <fieldset key={group}>
-        <legend><strong>{group}</strong></legend>
-        {endLocation.map((endpoint) => {
-          return (
-            <label
-              key={endpoint.name}
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "flex-start",
-                gap: "0.5em",
-                width: "100%",
-                marginBottom: "1em", // 行間
-              }}
-            >
-              <input
-                type="radio"
-                checked={selectedEndpoint?.name === endpoint.name}
-                onChange={() => setSelectedEndpoint(endpoint)}
-                disabled={loading}
+        <fieldset key={group}>
+          <legend><strong>{group}</strong></legend>
+          {endLocation.map((endpoint) => {
+            return (
+              <label
+                key={endpoint.name}
                 style={{
-                  width: "16px",
-                  height: "16px",
-                  flexShrink: 0,
-                  marginTop: "0.2em",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                  gap: "0.5em",
+                  width: "100%",
+                  marginBottom: "1em",
                 }}
-              />
-              <span
-                className="tag-label"
-                dangerouslySetInnerHTML={{ __html: endpoint.name }}
-              />
-            </label>
-          );
-        })}
+              >
+                <input
+                  type="radio"
+                  checked={selectedEndpoint?.name === endpoint.name}
+                  onChange={() => setSelectedEndpoint(endpoint)}
+                  disabled={loading}
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    flexShrink: 0,
+                    marginTop: "0.2em",
+                  }}
+                />
+                <span
+                  className="tag-label"
+                  dangerouslySetInnerHTML={{ __html: endpoint.name }}
+                />
+              </label>
+            );
+          })}
         </fieldset>
       ))}
 
-
-
-      /*
-========================================
-ここに他メンバーから受け取った
-ルート情報が入る
-========================================
-*/
-
-const routeData = {
-
-  // 現在地
-  origin: {
-
-    // 緯度
-    lat: ,
-
-    // 経度
-    lng: 
-  },
-
-  // 経由地（複数対応）
-  waypoints: [
-
-    /*
-    {
-      lat: ,
-      lng:
-    }
-    */
-
-    {
-      lat: ,
-      lng: 
-    }
-
-  ],
-
-  // 目的地
-  destination: {
-
-    // 緯度
-    lat: ,
-
-    // 経度
-    lng: 
-  }
-};
-
-
-/*
-========================================
-Google Maps URL生成
-========================================
-*/
-
-function createGoogleMapsUrl(data) {
-
-  // 出発地
-  const origin =
-    `${data.origin.lat},${data.origin.lng}`;
-
-  // 目的地
-  const destination =
-    `${data.destination.lat},${data.destination.lng}`;
-
-  // Google Maps URL
-  let url =
-    "https://www.google.com/maps/dir/?api=1";
-
-  // 出発地追加
-  url += `&origin=${origin}`;
-
-  // 目的地追加
-  url += `&destination=${destination}`;
-
-  /*
-  ========================================
-  経由地が存在する場合
-  ========================================
-  */
-
-  if (data.waypoints.length > 0) {
-
-    const waypointString =
-      data.waypoints
-        .map(point =>
-          `${point.lat},${point.lng}`
-        )
-        .join("|");
-
-    url += `&waypoints=${waypointString}`;
-  }
-
-  // 移動方法
-  url += "&travelmode=driving";
-
-  return url;
-}
-
-
-/*
-========================================
-ナビ開始ボタン生成
-========================================
-*/
-
-// ボタン作成
-const startButton =
-  document.createElement("button");
-
-// ボタンの文字
-startButton.textContent = "ナビ開始";
-
-// ボタンの見た目
-startButton.style.padding = "15px 30px";
-startButton.style.fontSize = "18px";
-startButton.style.backgroundColor = "#4285F4";
-startButton.style.color = "white";
-startButton.style.border = "none";
-startButton.style.borderRadius = "8px";
-startButton.style.cursor = "pointer";
-
-// 画面に追加
-document.body.appendChild(startButton);
-
-
-/*
-========================================
-ボタンクリック時
-========================================
-*/
-
-startButton.addEventListener("click", () => {
-
-  // Google Maps URL生成
-  const mapsUrl =
-    createGoogleMapsUrl(routeData);
-
-  // Google Mapsを開く
-  window.open(mapsUrl, "_blank");
-});
+      <button onClick={handleSubmit} disabled={loading}>
+        {loading ? "ナビ生成中..." : "Googleマップでナビを開始する"}
+      </button>
 
       {loading && <div className="spinner" />}
 
