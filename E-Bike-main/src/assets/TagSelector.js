@@ -100,6 +100,16 @@ const TagSelector = ({ onRunNavigation }) => {
     }
   };
 
+  // チェックされたタグのspotsをまとめて取得-國重
+  const selectedSpots = Object.values(tagGroups)
+  .flat()
+  .filter(tag => selectedTags.includes(`${tag.key}=${tag.type}`))
+  .flatMap(tag => tag.spots ?? [])
+  .filter(spot => spot.lat !== null);
+
+  await onRunNavigation(selectedTags, selectedEndpoint, randomroute, selectedSpots);
+  //                         
+
   return (
     <div style={{ padding: "0.2rem", textAlign: "left" }}>
           <h2>ルート生成をランダムにしますか？</h2>
