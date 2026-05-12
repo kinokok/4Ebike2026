@@ -69,31 +69,17 @@
     <p>舞鶴市外へはスクロールやズームアウトができない設定です。</p>
     
     <div class="search-container">
-        <h3>ホットペッパーから検索</h3>
+        <h3>ホットペッパー範囲内検索</h3>
+        <div style="margin-bottom: 8px; font-size: 13px; color: #333;">
+            現在表示している地図の範囲をもとに、ホットペッパーに登録されている店舗を検索します。
+            <strong>キーワードは不要</strong>です。
+        </div>
         <div>
-            <input type="text" id="searchKeyword" placeholder="キーワード（例：ラーメン、焼肉）" value="">
             <select id="searchGenre">
-                <option value="">--- ジャンル選択 ---</option>
-                <option value="G001">和食</option>
-                <option value="G002">洋食</option>
-                <option value="G003">中華</option>
-                <option value="G004">イタリアン</option>
-                <option value="G005">フレンチ</option>
-                <option value="G006">カフェ</option>
-                <option value="G007">ラーメン</option>
-                <option value="G008">焼肉</option>
-                <option value="G009">寿司・海鮮</option>
-                <option value="G010">居酒屋</option>
-                <option value="G011">焼き鳥</option>
-                <option value="G012">パスタ</option>
-                <option value="G013">スイーツ</option>
-            </select>
-            <select id="searchRange">
-                <option value="300">300m</option>
-                <option value="500" selected>500m</option>
-                <option value="1000">1000m</option>
-                <option value="2000">2000m</option>
-                <option value="3000">3000m</option>
+                <option value="all">--- すべての店舗 ---</option>
+                <option value="meal">お食事（和・洋・中・伊・仏・麺・魚・パスタ）</option>
+                <option value="alcohol_meat">お酒・肉（居酒屋・焼き鳥・焼肉）</option>
+                <option value="cafe_sweets">カフェ・甘味（カフェ・スイーツ）</option>
             </select>
             <button onclick="searchRestaurants()">検索</button>
             <button onclick="clearMarkers()">クリア</button>
@@ -145,102 +131,132 @@
         // マーカーグループを地図に追加
         restaurantMarkerGroup.addTo(map);
 
+        function getRangeFromMapBounds() {
+            const bounds = map.getBounds();
+            const center = map.getCenter();
+            const points = [
+                bounds.getNorthEast(),
+                bounds.getNorthWest(),
+                bounds.getSouthEast(),
+                bounds.getSouthWest()
+            ];
+            const distances = points.map(point => map.distance(center, point));
+            const maxDistance = Math.max(...distances);
+            const allowedRanges = [300, 500, 1000, 2000, 3000];
+            const selected = allowedRanges.find(value => value >= maxDistance) || 3000;
+            return {
+                actual: Math.round(maxDistance),
+                range: selected
+            };
+        }
+
         // =====================================================
         // ホットペッパーAPI検索関数
         // =====================================================
         async function searchRestaurants() {
-            const keyword = document.getElementById('searchKeyword').value;
-            const genre = document.getElementById('searchGenre').value;
-            const range = document.getElementById('searchRange').value;
+            const genreSelect = document.getElementById('searchGenre');
+            const genre = genreSelect.value;
             const statusEl = document.getElementById('searchStatus');
             const infoEl = document.getElementById('searchInfo');
-            
-            // キーワードまたはジャンルのどちらか一つは必須
-            if (!keyword && !genre) {
-                statusEl.innerHTML = '⚠️ キーワードまたはジャンルを選択してください。';
-                statusEl.style.color = 'orange';
-                return;
-            }
-            
-            // APIキーの確認
-            if (HOTPEPPER_API_KEY === 'YOUR_API_KEY_HERE') {
-                statusEl.innerHTML = '❌ エラー: ホットペッパーAPIのキーが設定されていません。';
+
+            if (HOTPEPPER_API_KEY === 'YOUR_API_KEY_HERE' || HOTPEPPER_API_KEY === '１１１') {
+                statusEl.innerHTML = '❌ エラー: ホットペッパーAPIのキーが正しく設定されていません。';
                 statusEl.style.color = 'red';
                 return;
             }
-            
+
             statusEl.innerHTML = '🔍 検索中...';
             statusEl.style.color = 'blue';
-            
+
             try {
-                // 現在のマップ中心から検索
                 const center = map.getCenter();
                 const lat = center.lat;
                 const lng = center.lng;
+                const rangeInfo = getRangeFromMapBounds();
+                const range = rangeInfo.range;
                 
-                infoEl.innerHTML = `📍 検索中心: ${lat.toFixed(4)}, ${lng.toFixed(4)} | 検索範囲: ${range}m`;
-                
-                // ホットペッパーグルメサーチAPI呼び出し
-                let apiUrl = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=${HOTPEPPER_API_KEY}&lat=${lat}&lng=${lng}&range=${range}&format=json&count=100`;
-                
-                // キーワード検索
-                if (keyword) {
-                    apiUrl += `&keyword=${encodeURIComponent(keyword)}`;
+                // 選択中のセレクトボックスのテキストをそのままラベルとして利用
+                const categoryName = genreSelect.options[genreSelect.selectedIndex].text;
+
+                infoEl.innerHTML = `📍 検索中心: ${lat.toFixed(4)}, ${lng.toFixed(4)} | カテゴリ: ${categoryName} | 使用範囲: ${range}m`;
+
+                // ジャンルコードの対応表を変更
+                const genreMap = {
+                    meal: ['G004', 'G005', 'G006', 'G007', 'G013'], // 和・洋・伊仏・中・ラーメン
+                    alcohol_meat: ['G001', 'G008'],                 // 居酒屋・焼肉
+                    cafe_sweets: ['G014']                           // カフェ・スイーツ
+                };
+
+                const genreCodes = genre === 'all' ? [] : genreMap[genre] || [];
+                const requests = [];
+
+                if (genre === 'all') {
+                    const apiUrl = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=${HOTPEPPER_API_KEY}&lat=${lat}&lng=${lng}&range=${range}&format=json&count=100`;
+                    requests.push(fetch(`https://corsproxy.io/?${encodeURIComponent(apiUrl)}`));
+                } else {
+                    genreCodes.forEach(code => {
+                        const apiUrl = `https://webservice.recruit.co.jp/hotpepper/gourmet/v1/?key=${HOTPEPPER_API_KEY}&lat=${lat}&lng=${lng}&range=${range}&format=json&count=100&genre=${code}`;
+                        requests.push(fetch(`https://corsproxy.io/?${encodeURIComponent(apiUrl)}`));
+                    });
                 }
-                
-                // ジャンル検索
-                if (genre) {
-                    apiUrl += `&genre=${genre}`;
-                }
-                
-                // CORS対応：プロキシを使用
-                const url = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-                
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
+
+                const responses = await Promise.all(requests);
+                const dataList = await Promise.all(responses.map(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                }));
+
                 // 既存のマーカーをクリア
                 clearMarkers();
                 
-                if (!data.results || !data.results.shop) {
-                    let searchTerm = keyword || genre;
-                    statusEl.innerHTML = `⚠️ 「${searchTerm}」の検索結果がありません。<br>別のキーワードやジャンル、検索範囲を試してください。`;
+                const allShops = [];
+                const uniqueIds = new Set();
+
+                dataList.forEach(data => {
+                    if (!data.results || !data.results.shop) {
+                        return;
+                    }
+                    const shops = Array.isArray(data.results.shop) ? data.results.shop : [data.results.shop];
+                    shops.forEach(shop => {
+                        if (!shop.id || uniqueIds.has(shop.id)) {
+                            return;
+                        }
+                        uniqueIds.add(shop.id);
+                        allShops.push(shop);
+                    });
+                });
+
+                if (allShops.length === 0) {
+                    statusEl.innerHTML = `⚠️ 「${categoryName}」の検索結果がありません。<br>別の地図位置や表示倍率を試してください。`;
                     statusEl.style.color = 'orange';
                     return;
                 }
-                
-                const shops = Array.isArray(data.results.shop) ? data.results.shop : [data.results.shop];
+
                 let addedCount = 0;
-                
-                // 各店舗をマーカーとして追加
-                shops.forEach(shop => {
+
+                allShops.forEach(shop => {
                     if (!shop.lat || !shop.lng) return;
-                    
+
                     const lat = parseFloat(shop.lat);
                     const lng = parseFloat(shop.lng);
-                    
-                    // マーカーを作成
+
                     const marker = L.marker([lat, lng])
                         .bindPopup(createPopupContent(shop));
-                    
+
                     restaurantMarkerGroup.addLayer(marker);
                     restaurantMarkers.push(marker);
                     addedCount++;
                 });
-                
+
                 if (addedCount === 0) {
-                    statusEl.innerHTML = `⚠️ 舞鶴市内に該当する店舗がありません。`;
+                    statusEl.innerHTML = `⚠️ 該当する店舗は見つかりませんでした。`; 
                     statusEl.style.color = 'orange';
                 } else {
-                    statusEl.innerHTML = `✅ 検索完了: ${addedCount}件の店舗が見つかりました。`;
+                    statusEl.innerHTML = `✅ 検索完了: ${addedCount}件の店舗を表示しました。`; 
                     statusEl.style.color = 'green';
-                    
-                    // マップをズームしてマーカーすべてを表示
+
                     if (restaurantMarkers.length > 0) {
                         map.fitBounds(restaurantMarkerGroup.getBounds().pad(0.1));
                     }
