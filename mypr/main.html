@@ -3,38 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>舞鶴市 飲食店検索マップ（ローカルデータ版）</title>
+    <title>舞鶴市 検索マップ</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; padding: 20px; font-family: sans-serif; }
-        #map { width: 100%; height: 600px; margin-top: 15px; border: 1px solid #ccc; }
-        .panel { background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 5px solid #4CAF50; }
-        button { padding: 8px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 14px; }
-        .btn-green { background-color: #4CAF50; } .btn-green:hover { background-color: #45a049; }
-        .btn-gray { background-color: #777; } .btn-gray:hover { background-color: #555; }
-        select, input[type="text"] { padding: 8px; font-size: 14px; border: 1px solid #ddd; border-radius: 4px; margin-right: 10px; }
-        .status { margin-top: 8px; font-size: 13px; font-weight: bold; }
-        .flex-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        body { margin: 0; padding: 20px; font-family: sans-serif; background-color: #f9f9f9; }
+        h1 { font-size: 22px; margin-top: 0; color: #333; }
+        #map { width: 100%; height: 600px; margin-top: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        .panel { 
+            background-color: #fff; 
+            padding: 15px; 
+            border-radius: 6px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid #2196F3; 
+        }
+        
+        .flex-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
+        select, input[type="text"] { 
+            padding: 8px 12px; 
+            font-size: 14px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            outline: none;
+        }
+        select:focus, input[type="text"]:focus { border-color: #2196F3; }
+        
+        button { 
+            padding: 8px 16px; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        .btn-blue { background-color: #2196F3; }
+        .btn-gray { background-color: #757575; }
+        
+        .status { margin-top: 10px; font-size: 13px; font-weight: bold; }
+        
+        .popup-content { font-size: 13px; line-height: 1.5; }
+        .popup-content h4 { margin: 0 0 5px 0; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
+        .tag-blue { display: inline-block; background: #e3f2fd; color: #1565c0; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-bottom: 5px; }
+        .tag-red { display: inline-block; background: #ffebee; color: #c62828; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-    <h1>舞鶴市 飲食店検索マップ</h1>
+    <h1>舞鶴市 EbikeProjeckt</h1>
     
     <div class="panel">
-        <h3 style="margin:0 0 10px 0;">店舗検索</h3>
         <div class="flex-row">
-            <select id="searchGenre">
-                <option value="all">--- すべての店舗 ---</option>
-                <option value="meal">お食事（和・洋・中・伊・仏・麺・魚・パスタ）</option>
-                <option value="alcohol_meat">お酒・肉（居酒屋・焼き鳥・焼肉）</option>
-                <option value="cafe_sweets">カフェ・甘味（カフェ・スイーツ）</option>
+            <select id="searchGroup">
+                <option value="all">--- すべてのスポット ---</option>
+                <optgroup label="飲食店（青ピン）">
+                    <option value="meal">お食事（和・洋・中・パスタ・麺など）</option>
+                    <option value="alcohol_meat">お酒・肉（居酒屋・焼肉など）</option>
+                    <option value="cafe_sweets">カフェ</option>
+                </optgroup>
+                <optgroup label="観光・レジャー（赤ピン）">
+                    <option value="sightseeing">観光スポット・史跡・施設</option>
+                    <option value="activity">アクティビティ・公園</option>
+                </optgroup>
             </select>
-            <input type="text" id="searchKeyword" placeholder="店舗名で絞り込み">
-            <button class="btn-green" onclick="searchFromLocalDB()">検索して表示</button>
+            
+            <input type="text" id="searchKeyword" placeholder="名称で絞り込み (例: 赤れんが)">
+            <button class="btn-blue" onclick="searchFromLocalDB()">現在の表示範囲で検索</button>
             <button class="btn-gray" onclick="clearMarkers()">クリア</button>
         </div>
-        <div id="dbStatus" class="status">データを読み込み中...</div>
+        <div id="status" class="status">データを読み込み中...</div>
     </div>
     
     <div id="map"></div>
@@ -44,20 +84,35 @@
     
     <script>
         // =====================================================
-        // 1. ローカルデータベースの定義 (Dexie.js)
+        // 1. ローカルデータベースの定義
         // =====================================================
-        const db = new Dexie("MaizuruGourmetDB");
+        const db = new Dexie("MaizuruTotalSpotsDB");
         db.version(1).stores({
-            shops: "id, name, group, lat, lng"
+            spots: "id, name, group, genre, lat, lng"
         });
 
         // =====================================================
-        // 2. 設定と地図の初期化
+        // 2. ピンのカスタムアイコン定義
         // =====================================================
-        const bounds = [[35.28, 135.15], [35.61, 135.62]];
+        const blueIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+        const redIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+        // =====================================================
+        // 3. 地図の設定と初期化
+        // =====================================================
+        const bounds = [[35.35, 135.20], [35.55, 135.55]];
         const maizuruCenter = [35.4751, 135.3338];
-        let restaurantMarkers = [];
-        let restaurantMarkerGroup = L.featureGroup();
+        let markers = [];
+        let markerGroup = L.featureGroup();
         
         const map = L.map('map', { 
             center: maizuruCenter, 
@@ -68,101 +123,113 @@
         });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' 
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' 
         }).addTo(map);
 
-        restaurantMarkerGroup.addTo(map);
+        markerGroup.addTo(map);
 
         // =====================================================
-        // 3. アプリ起動時の処理（JSON読み込み）
+        // 4. 初期ロード処理
         // =====================================================
-        window.addEventListener('load', initApp);
-
-        async function initApp() {
-            const statusEl = document.getElementById('dbStatus');
+        window.addEventListener('load', async () => {
+            const statusEl = document.getElementById('status');
             try {
-                // maizuru_data.json を取得
-                const response = await fetch('maizuru_data.json');
-                if (!response.ok) throw new Error('maizuru_data.json が見つかりません。');
-                
+                const response = await fetch('maizuru_spots.json');
+                if (!response.ok) throw new Error('maizuru_spots.json が読み込めません。');
                 const data = await response.json();
-
-                // データベースを更新
-                await db.shops.bulkPut(data);
                 
-                const count = await db.shops.count();
-                statusEl.innerHTML = `✅ データベース準備完了（現在: ${count}件）`;
+                await db.spots.bulkPut(data);
+                const count = await db.spots.count();
+                statusEl.innerHTML = `✅ 準備完了（全 ${count}件収録）。`;
                 statusEl.style.color = "green";
             } catch (error) {
                 console.error(error);
                 statusEl.innerHTML = `❌ エラー: ${error.message}`;
                 statusEl.style.color = "red";
             }
-        }
+        });
 
         // =====================================================
-        // 4. 検索機能
+        // 5. 画面内限定の検索＆プロット処理
         // =====================================================
         async function searchFromLocalDB() {
-            const selectedGroup = document.getElementById('searchGenre').value;
+            const selectedGroup = document.getElementById('searchGroup').value;
             const keyword = document.getElementById('searchKeyword').value.trim();
-            const statusEl = document.getElementById('dbStatus');
+            const statusEl = document.getElementById('status');
+            
+            // ★追加：現在表示されている地図の枠線情報（東西南北の境界）を取得
+            const currentBounds = map.getBounds();
             
             clearMarkers();
 
             try {
-                let collection = db.shops;
+                let collection = db.spots;
 
-                // ジャンル絞り込み
                 if (selectedGroup !== 'all') {
                     collection = collection.where('group').equals(selectedGroup);
                 }
 
-                let results = await collection.toArray();
+                let allResults = await collection.toArray();
                 
-                // キーワード絞り込み
-                if (keyword !== '') {
-                    results = results.filter(shop => shop.name.includes(keyword));
-                }
+                // ★追加：画面内に入っているスポット ＆ キーワードに一致するものだけを抽出
+                let filteredResults = allResults.filter(spot => {
+                    if (!spot.lat || !spot.lng) return false;
+                    
+                    // スポットの座標オブジェクトを作成
+                    const spotLatLng = L.latLng(spot.lat, spot.lng);
+                    // 現在の画面内(currentBounds)に座標が含まれているか判定
+                    const isInsideScreen = currentBounds.contains(spotLatLng);
+                    
+                    // キーワード判定
+                    const matchKeyword = (keyword === '' || spot.name.includes(keyword));
+                    
+                    return isInsideScreen && matchKeyword;
+                });
 
-                if (results.length === 0) {
-                    statusEl.innerHTML = "⚠️ 条件に一致する店舗が見つかりませんでした。";
-                    statusEl.style.color = "orange";
+                if (filteredResults.length === 0) {
+                    statusEl.innerHTML = "⚠️ 現在表示中のエリアには、条件に一致するスポットがありません。";
+                    statusEl.style.color = "#FF9800";
                     return;
                 }
 
-                // プロット
-                results.forEach(item => {
-                    const marker = L.marker([item.lat, item.lng])
-                        .bindPopup(createPopupContent(item.raw_data));
-                    restaurantMarkerGroup.addLayer(marker);
-                    restaurantMarkers.push(marker);
+                // プロット処理
+                filteredResults.forEach(spot => {
+                    const isFacility = (spot.group === 'sightseeing' || spot.group === 'activity');
+                    const selectedIcon = isFacility ? redIcon : blueIcon;
+                    const tagClass = isFacility ? 'tag-red' : 'tag-blue';
+
+                    const popupHtml = `
+                        <div class="popup-content">
+                            <span class="${tagClass}">${spot.genre || 'スポット'}</span>
+                            <h4>${spot.name}</h4>
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name + ' 舞鶴')}" target="_blank" style="font-size:11px;">Google Mapsで調べる</a>
+                        </div>
+                    `;
+
+                    const marker = L.marker([spot.lat, spot.lng], { icon: selectedIcon })
+                        .bindPopup(popupHtml);
+                    
+                    markerGroup.addLayer(marker);
+                    markers.push(marker);
                 });
 
-                statusEl.innerHTML = `✅ <strong>${results.length}</strong> 件の店舗を表示しました。`;
+                statusEl.innerHTML = `✅ <strong>${filteredResults.length}</strong> 件のスポットを発見しました。`;
                 statusEl.style.color = "green";
-                map.fitBounds(restaurantMarkerGroup.getBounds().pad(0.1));
+                
+                // ※意図的に map.fitBounds() を削除しています（見ている視点をキープするため）
 
             } catch (error) {
                 console.error(error);
-                statusEl.innerHTML = "❌ 検索中にエラーが発生しました。";
+                statusEl.innerHTML = "❌ 検索処理中にエラーが発生しました。";
                 statusEl.style.color = "red";
             }
         }
 
-        function createPopupContent(shop) {
-            let content = `<div style="width: 200px; font-size: 12px;">`;
-            content += `<strong>${shop.name}</strong><br>`;
-            if (shop.genre && shop.genre.name) content += `<small>ジャンル: ${shop.genre.name}</small><br>`;
-            if (shop.address) content += `<small>住所: ${shop.address}</small><br>`;
-            if (shop.url) content += `<a href="${shop.url}" target="_blank">詳細を見る</a>`;
-            content += `</div>`;
-            return content;
-        }
-
         function clearMarkers() {
-            restaurantMarkerGroup.clearLayers();
-            restaurantMarkers = [];
+            markerGroup.clearLayers();
+            markers = [];
+            document.getElementById('status').innerHTML = "マップをクリアしました。";
+            document.getElementById('status').style.color = "#333";
         }
     </script>
 </body>
