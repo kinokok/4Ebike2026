@@ -3,233 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>舞鶴市 検索マップ</title>
+    <title>舞鶴市 EbikeProject</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { margin: 0; padding: 20px; font-family: sans-serif; background-color: #f9f9f9; }
-        h1 { font-size: 22px; margin-top: 0; color: #333; }
-        #map { width: 100%; height: 600px; margin-top: 15px; border: 1px solid #ccc; border-radius: 4px; }
+        body { margin: 0; padding: 10px; font-family: sans-serif; background-color: #f5f5f5; }
+        h1 { font-size: 20px; margin: 0 0 10px 0; }
+        #map { width: 100%; height: 50vh; margin-top: 10px; border: 1px solid #ccc; }
         
-        .panel { 
-            background-color: #fff; 
-            padding: 15px; 
-            border-radius: 6px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border-left: 5px solid #2196F3; 
-        }
+        /* タブUIのスタイル */
+        .tab-container { background: #fff; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .tab-buttons { display: flex; background: #eee; border-bottom: 1px solid #ccc; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .tab-btn.active { background: #fff; color: #2196F3; border-bottom: 2px solid #2196F3; }
         
-        .flex-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .tab-content { display: none; padding: 15px; }
+        .tab-content.active { display: block; }
         
-        select, input[type="text"] { 
-            padding: 8px 12px; 
-            font-size: 14px; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
-            outline: none;
-        }
-        select:focus, input[type="text"]:focus { border-color: #2196F3; }
+        /* フォーム部品 */
+        select, input[type="text"] { padding: 6px; font-size: 14px; margin-right: 5px; margin-bottom: 5px;}
+        button.action-btn { padding: 6px 12px; cursor: pointer; background: #2196F3; color: #fff; border: none; border-radius: 3px; font-size: 13px;}
+        button.clear-btn { padding: 6px 12px; cursor: pointer; background: #757575; color: #fff; border: none; border-radius: 3px; font-size: 13px;}
         
-        button { 
-            padding: 8px 16px; 
-            color: white; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 14px; 
-            font-weight: bold;
-            transition: opacity 0.2s;
-        }
-        button:hover { opacity: 0.9; }
-        .btn-blue { background-color: #2196F3; }
-        .btn-gray { background-color: #757575; }
+        /* ルートリストのスタイル */
+        .route-item { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+        .route-item h4 { margin: 0 0 5px 0; font-size: 15px; }
+        .route-meta { font-size: 12px; color: #666; margin-bottom: 5px; }
         
-        .status { margin-top: 10px; font-size: 13px; font-weight: bold; }
-        
-        .popup-content { font-size: 13px; line-height: 1.5; }
-        .popup-content h4 { margin: 0 0 5px 0; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
-        .tag-blue { display: inline-block; background: #e3f2fd; color: #1565c0; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-bottom: 5px; }
-        .tag-red { display: inline-block; background: #ffebee; color: #c62828; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-bottom: 5px; }
+        #status { margin-top: 10px; font-size: 13px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>舞鶴市 EbikeProjeckt</h1>
+    <h1>舞鶴市 EbikeProject</h1>
     
-    <div class="panel">
-        <div class="flex-row">
+    <div class="tab-container">
+        <!-- タブボタン -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('tab-search', this)">📍 スポットを探す</button>
+            <button class="tab-btn" onclick="switchTab('tab-routes', this)">🚲 おすすめルート</button>
+        </div>
+
+        <!-- タブ1: スポット検索 -->
+        <div id="tab-search" class="tab-content active">
             <select id="searchGroup">
-                <option value="all">--- すべてのスポット ---</option>
+                <option value="all">すべてのスポット</option>
                 <optgroup label="飲食店（青ピン）">
-                    <option value="meal">お食事（和・洋・中・パスタ・麺など）</option>
-                    <option value="alcohol_meat">お酒・肉（居酒屋・焼肉など）</option>
+                    <option value="meal">お食事</option>
+                    <option value="alcohol_meat">お酒・肉</option>
                     <option value="cafe_sweets">カフェ</option>
                 </optgroup>
                 <optgroup label="観光・レジャー（赤ピン）">
-                    <option value="sightseeing">観光スポット・史跡・施設</option>
-                    <option value="activity">アクティビティ・公園</option>
+                    <option value="sightseeing">観光・史跡</option>
+                    <option value="activity">アクティビティ</option>
                 </optgroup>
             </select>
-            
-            <input type="text" id="searchKeyword" placeholder="名称で絞り込み (例: 赤れんが)">
-            <button class="btn-blue" onclick="searchFromLocalDB()">現在の表示範囲で検索</button>
-            <button class="btn-gray" onclick="clearMarkers()">クリア</button>
+            <input type="text" id="searchKeyword" placeholder="名称で絞り込み">
+            <button class="action-btn" onclick="searchFromLocalDB()">この範囲で検索</button>
+            <button class="clear-btn" onclick="clearMap()">クリア</button>
         </div>
-        <div id="status" class="status">データを読み込み中...</div>
+
+        <!-- タブ2: ルート一覧 -->
+        <div id="tab-routes" class="tab-content">
+            <div id="route-list">データを読み込んでいます...</div>
+        </div>
     </div>
-    
+
+    <div id="status">システム準備中...</div>
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
     
     <script>
-        // =====================================================
-        // 1. ローカルデータベースの定義
-        // =====================================================
+        // --- 1. データベースと地図の初期化 ---
         const db = new Dexie("MaizuruTotalSpotsDB");
-        db.version(1).stores({
-            spots: "id, name, group, genre, lat, lng"
-        });
+        db.version(1).stores({ spots: "id, name, group, genre, lat, lng" });
 
-        // =====================================================
-        // 2. ピンのカスタムアイコン定義
-        // =====================================================
+        // 青ピン（飲食店用）
         const blueIcon = new L.Icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
         });
 
+        // 赤ピン（観光・施設用）
         const redIcon = new L.Icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
         });
 
-        // =====================================================
-        // 3. 地図の設定と初期化
-        // =====================================================
-        const bounds = [[35.35, 135.20], [35.55, 135.55]];
-        const maizuruCenter = [35.4751, 135.3338];
-        let markers = [];
-        let markerGroup = L.featureGroup();
-        
-        const map = L.map('map', { 
-            center: maizuruCenter, 
-            zoom: 12, 
-            minZoom: 11, 
-            maxBounds: bounds, 
-            maxBoundsViscosity: 1.0 
-        });
+        let map = L.map('map').setView([35.4751, 135.3338], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' 
-        }).addTo(map);
+        let markerGroup = L.featureGroup().addTo(map);
+        let routePolyline = null; 
+        let routesData = [];      
 
-        markerGroup.addTo(map);
-
-        // =====================================================
-        // 4. 初期ロード処理
-        // =====================================================
+        // --- 2. データ読み込み ---
         window.addEventListener('load', async () => {
             const statusEl = document.getElementById('status');
             try {
-                const response = await fetch('maizuru_spots.json');
-                if (!response.ok) throw new Error('maizuru_spots.json が読み込めません。');
-                const data = await response.json();
-                
-                await db.spots.bulkPut(data);
-                const count = await db.spots.count();
-                statusEl.innerHTML = `✅ 準備完了（全 ${count}件収録）。`;
+                const spotRes = await fetch('maizuru_spots.json');
+                const spotData = await spotRes.json();
+                await db.spots.bulkPut(spotData);
+
+                const routeRes = await fetch('routes.json');
+                routesData = await routeRes.json();
+                renderRouteList();
+
+                statusEl.innerHTML = `✅ 準備完了（スポット ${await db.spots.count()}件 / ルート ${routesData.length}件）`;
                 statusEl.style.color = "green";
             } catch (error) {
-                console.error(error);
-                statusEl.innerHTML = `❌ エラー: ${error.message}`;
+                statusEl.innerHTML = `❌ データ読込エラー: ${error.message}`;
                 statusEl.style.color = "red";
             }
         });
 
-        // =====================================================
-        // 5. 画面内限定の検索＆プロット処理
-        // =====================================================
+        // --- ★ アイコン判定関数（復活） ---
+        function getIconForSpot(spot) {
+            const isFacility = (spot.group === 'sightseeing' || spot.group === 'activity');
+            return isFacility ? redIcon : blueIcon;
+        }
+
+        // --- 3. タブ切り替え制御（クリア機能追加） ---
+        function switchTab(tabId, btnElement) {
+            // ★ タブを切り替えたら地図上のピンや線を消す
+            clearMap();
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+            
+            // ステータス文言もリセット
+            document.getElementById('status').innerHTML = "準備完了";
+        }
+
+        // --- 4. スポット検索機能 ---
         async function searchFromLocalDB() {
-            const selectedGroup = document.getElementById('searchGroup').value;
+            clearMap();
+            const group = document.getElementById('searchGroup').value;
             const keyword = document.getElementById('searchKeyword').value.trim();
-            const statusEl = document.getElementById('status');
-            
-            // ★追加：現在表示されている地図の枠線情報（東西南北の境界）を取得
             const currentBounds = map.getBounds();
+            const statusEl = document.getElementById('status');
+
+            let allSpots = await (group === 'all' ? db.spots.toArray() : db.spots.where('group').equals(group).toArray());
             
-            clearMarkers();
+            let results = allSpots.filter(s => {
+                if (!s.lat || !s.lng) return false;
+                const inScreen = currentBounds.contains(L.latLng(s.lat, s.lng));
+                const matchWord = (keyword === '' || s.name.includes(keyword));
+                return inScreen && matchWord;
+            });
 
-            try {
-                let collection = db.spots;
+            results.forEach(spot => {
+                // ★ 判定関数を使ってアイコンを出し分ける
+                const marker = L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) })
+                    .bindPopup(`<b>${spot.name}</b><br><span style="font-size:11px;color:#666;">${spot.genre}</span>`);
+                markerGroup.addLayer(marker);
+            });
 
-                if (selectedGroup !== 'all') {
-                    collection = collection.where('group').equals(selectedGroup);
-                }
+            statusEl.innerHTML = `✅ ${results.length}件のスポットを表示しました。`;
+        }
 
-                let allResults = await collection.toArray();
-                
-                // ★追加：画面内に入っているスポット ＆ キーワードに一致するものだけを抽出
-                let filteredResults = allResults.filter(spot => {
-                    if (!spot.lat || !spot.lng) return false;
+        // --- 5. おすすめルート描画機能 ---
+        function renderRouteList() {
+            const listEl = document.getElementById('route-list');
+            listEl.innerHTML = '';
+            
+            routesData.forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'route-item';
+                item.innerHTML = `
+                    <h4>${r.title}</h4>
+                    <div class="route-meta">距離: ${r.distance_km}km / 目安: ${r.time_min}分 / 難易度: ${r.difficulty}</div>
+                    <div style="font-size:12px; margin-bottom:8px;">${r.description}</div>
+                    <button class="action-btn" onclick="drawRoute('${r.route_id}')">地図にルートを表示</button>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        async function drawRoute(routeId) {
+            clearMap();
+            const route = routesData.find(r => r.route_id === routeId);
+            if (!route) return;
+
+            const latlngs = [];
+            const googleWaypoints = []; 
+
+            for (let i = 0; i < route.waypoints.length; i++) {
+                const spot = await db.spots.get(route.waypoints[i]);
+                if (spot) {
+                    latlngs.push([spot.lat, spot.lng]);
+                    googleWaypoints.push(`${spot.lat},${spot.lng}`);
                     
-                    // スポットの座標オブジェクトを作成
-                    const spotLatLng = L.latLng(spot.lat, spot.lng);
-                    // 現在の画面内(currentBounds)に座標が含まれているか判定
-                    const isInsideScreen = currentBounds.contains(spotLatLng);
-                    
-                    // キーワード判定
-                    const matchKeyword = (keyword === '' || spot.name.includes(keyword));
-                    
-                    return isInsideScreen && matchKeyword;
-                });
-
-                if (filteredResults.length === 0) {
-                    statusEl.innerHTML = "⚠️ 現在表示中のエリアには、条件に一致するスポットがありません。";
-                    statusEl.style.color = "#FF9800";
-                    return;
-                }
-
-                // プロット処理
-                filteredResults.forEach(spot => {
-                    const isFacility = (spot.group === 'sightseeing' || spot.group === 'activity');
-                    const selectedIcon = isFacility ? redIcon : blueIcon;
-                    const tagClass = isFacility ? 'tag-red' : 'tag-blue';
-
-                    const popupHtml = `
-                        <div class="popup-content">
-                            <span class="${tagClass}">${spot.genre || 'スポット'}</span>
-                            <h4>${spot.name}</h4>
-                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name + ' 舞鶴')}" target="_blank" style="font-size:11px;">Google Mapsで調べる</a>
-                        </div>
-                    `;
-
-                    const marker = L.marker([spot.lat, spot.lng], { icon: selectedIcon })
-                        .bindPopup(popupHtml);
-                    
+                    // ★ ルート描画時も、判定関数を使ってアイコンを出し分ける
+                    const marker = L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) })
+                        .bindPopup(`<b>${i + 1}. ${spot.name}</b><br><span style="font-size:11px;color:#666;">${spot.genre}</span>`);
                     markerGroup.addLayer(marker);
-                    markers.push(marker);
-                });
+                }
+            }
 
-                statusEl.innerHTML = `✅ <strong>${filteredResults.length}</strong> 件のスポットを発見しました。`;
-                statusEl.style.color = "green";
+            if (latlngs.length > 0) {
+                routePolyline = L.polyline(latlngs, { color: '#E91E63', weight: 5, opacity: 0.8 }).addTo(map);
+                map.fitBounds(routePolyline.getBounds(), { padding: [20, 20] });
+
+                const origin = googleWaypoints.shift(); 
+                const destination = googleWaypoints.pop() || origin; 
+                const wpStr = googleWaypoints.join('|'); 
                 
-                // ※意図的に map.fitBounds() を削除しています（見ている視点をキープするため）
+                let naviUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=bicycling`;
+                if (wpStr) naviUrl += `&waypoints=${wpStr}`;
 
-            } catch (error) {
-                console.error(error);
-                statusEl.innerHTML = "❌ 検索処理中にエラーが発生しました。";
-                statusEl.style.color = "red";
+                document.getElementById('status').innerHTML = `
+                    ✅ ルート「${route.title}」を表示中。
+                    <a href="${naviUrl}" target="_blank" style="background:#4CAF50; color:white; padding:4px 8px; text-decoration:none; border-radius:3px; margin-left:10px;">スマホでナビ開始</a>
+                `;
             }
         }
 
-        function clearMarkers() {
+        // --- 6. クリア処理 ---
+        function clearMap() {
             markerGroup.clearLayers();
-            markers = [];
-            document.getElementById('status').innerHTML = "マップをクリアしました。";
-            document.getElementById('status').style.color = "#333";
+            if (routePolyline) {
+                map.removeLayer(routePolyline);
+                routePolyline = null;
+            }
+            document.getElementById('status').innerHTML = ""; // ステータスもクリア
         }
     </script>
 </body>
