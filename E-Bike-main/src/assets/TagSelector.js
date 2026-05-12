@@ -257,7 +257,7 @@ function createGoogleMapsUrl(data) {
   }
 
   // 移動方法
-  url += "&travelmode=driving";
+  url += "&travelmode=bicycling";
 
   return url;
 }
