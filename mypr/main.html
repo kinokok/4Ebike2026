@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>舞鶴市 飲食店検索マップ（ローカルデータ版）</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; padding: 20px; font-family: sans-serif; }
+        #map { width: 100%; height: 600px; margin-top: 15px; border: 1px solid #ccc; }
+        .panel { background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 5px solid #4CAF50; }
+        button { padding: 8px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; font-size: 14px; }
+        .btn-green { background-color: #4CAF50; } .btn-green:hover { background-color: #45a049; }
+        .btn-gray { background-color: #777; } .btn-gray:hover { background-color: #555; }
+        select, input[type="text"] { padding: 8px; font-size: 14px; border: 1px solid #ddd; border-radius: 4px; margin-right: 10px; }
+        .status { margin-top: 8px; font-size: 13px; font-weight: bold; }
+        .flex-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    </style>
+</head>
+<body>
+
+    <h1>舞鶴市 飲食店検索マップ</h1>
+    
+    <div class="panel">
+        <h3 style="margin:0 0 10px 0;">店舗検索</h3>
+        <div class="flex-row">
+            <select id="searchGenre">
+                <option value="all">--- すべての店舗 ---</option>
+                <option value="meal">お食事（和・洋・中・伊・仏・麺・魚・パスタ）</option>
+                <option value="alcohol_meat">お酒・肉（居酒屋・焼き鳥・焼肉）</option>
+                <option value="cafe_sweets">カフェ・甘味（カフェ・スイーツ）</option>
+            </select>
+            <input type="text" id="searchKeyword" placeholder="店舗名で絞り込み">
+            <button class="btn-green" onclick="searchFromLocalDB()">検索して表示</button>
+            <button class="btn-gray" onclick="clearMarkers()">クリア</button>
+        </div>
+        <div id="dbStatus" class="status">データを読み込み中...</div>
+    </div>
+    
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+    
+    <script>
+        // =====================================================
+        // 1. ローカルデータベースの定義 (Dexie.js)
+        // =====================================================
+        const db = new Dexie("MaizuruGourmetDB");
+        db.version(1).stores({
+            shops: "id, name, group, lat, lng"
+        });
+
+        // =====================================================
+        // 2. 設定と地図の初期化
+        // =====================================================
+        const bounds = [[35.28, 135.15], [35.61, 135.62]];
+        const maizuruCenter = [35.4751, 135.3338];
+        let restaurantMarkers = [];
+        let restaurantMarkerGroup = L.featureGroup();
+        
+        const map = L.map('map', { 
+            center: maizuruCenter, 
+            zoom: 12, 
+            minZoom: 11, 
+            maxBounds: bounds, 
+            maxBoundsViscosity: 1.0 
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' 
+        }).addTo(map);
+
+        restaurantMarkerGroup.addTo(map);
+
+        // =====================================================
+        // 3. アプリ起動時の処理（JSON読み込み）
+        // =====================================================
+        window.addEventListener('load', initApp);
+
+        async function initApp() {
+            const statusEl = document.getElementById('dbStatus');
+            try {
+                // maizuru_data.json を取得
+                const response = await fetch('maizuru_data.json');
+                if (!response.ok) throw new Error('maizuru_data.json が見つかりません。');
+                
+                const data = await response.json();
+
+                // データベースを更新
+                await db.shops.bulkPut(data);
+                
+                const count = await db.shops.count();
+                statusEl.innerHTML = `✅ データベース準備完了（現在: ${count}件）`;
+                statusEl.style.color = "green";
+            } catch (error) {
+                console.error(error);
+                statusEl.innerHTML = `❌ エラー: ${error.message}`;
+                statusEl.style.color = "red";
+            }
+        }
+
+        // =====================================================
+        // 4. 検索機能
+        // =====================================================
+        async function searchFromLocalDB() {
+            const selectedGroup = document.getElementById('searchGenre').value;
+            const keyword = document.getElementById('searchKeyword').value.trim();
+            const statusEl = document.getElementById('dbStatus');
+            
+            clearMarkers();
+
+            try {
+                let collection = db.shops;
+
+                // ジャンル絞り込み
+                if (selectedGroup !== 'all') {
+                    collection = collection.where('group').equals(selectedGroup);
+                }
+
+                let results = await collection.toArray();
+                
+                // キーワード絞り込み
+                if (keyword !== '') {
+                    results = results.filter(shop => shop.name.includes(keyword));
+                }
+
+                if (results.length === 0) {
+                    statusEl.innerHTML = "⚠️ 条件に一致する店舗が見つかりませんでした。";
+                    statusEl.style.color = "orange";
+                    return;
+                }
+
+                // プロット
+                results.forEach(item => {
+                    const marker = L.marker([item.lat, item.lng])
+                        .bindPopup(createPopupContent(item.raw_data));
+                    restaurantMarkerGroup.addLayer(marker);
+                    restaurantMarkers.push(marker);
+                });
+
+                statusEl.innerHTML = `✅ <strong>${results.length}</strong> 件の店舗を表示しました。`;
+                statusEl.style.color = "green";
+                map.fitBounds(restaurantMarkerGroup.getBounds().pad(0.1));
+
+            } catch (error) {
+                console.error(error);
+                statusEl.innerHTML = "❌ 検索中にエラーが発生しました。";
+                statusEl.style.color = "red";
+            }
+        }
+
+        function createPopupContent(shop) {
+            let content = `<div style="width: 200px; font-size: 12px;">`;
+            content += `<strong>${shop.name}</strong><br>`;
+            if (shop.genre && shop.genre.name) content += `<small>ジャンル: ${shop.genre.name}</small><br>`;
+            if (shop.address) content += `<small>住所: ${shop.address}</small><br>`;
+            if (shop.url) content += `<a href="${shop.url}" target="_blank">詳細を見る</a>`;
+            content += `</div>`;
+            return content;
+        }
+
+        function clearMarkers() {
+            restaurantMarkerGroup.clearLayers();
+            restaurantMarkers = [];
+        }
+    </script>
+</body>
+</html>
