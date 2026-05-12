@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+/*
 const tagGroups = {
   "観光・歴史": [
     { key: "historic", type: "monument", label: "<b>記念碑</b>（舞鶴重砲兵連隊跡 / 舞鶴東～小浜西 開通記念碑）" },
@@ -8,6 +9,52 @@ const tagGroups = {
     { key: "tourism", type: "museum", label: "<b>博物館</b>（舞鶴の電気発祥の地 / 海軍記念館 / ルーシーちゃんの魔法の玩具博物館）" },
     { key: "tourism", type: "attraction", label: "<b>観光地</b>" },
   ],
+*/
+
+const tagGroups = {
+  "観光・歴史": [
+    { 
+      key: "historic", type: "monument", 
+      label: "<b>記念碑</b>（舞鶴重砲兵連隊跡 / 舞鶴東～小浜西 開通記念碑）",
+      spots: [
+        { name: "舞鶴重砲兵連隊跡", lat: 35.44923347687097, lon: 135.34080402210375 },
+        { name: "舞鶴東～小浜西 開通記念碑", lat: null, lon: null },
+      ]
+    },
+    { 
+      key: "historic", type: "memorial", 
+      label: "<b>慰霊碑</b>（四面山忠魂碑 / 舞鶴空襲学徒犠牲者慰霊碑 / 舞鶴海軍墓地）",
+      spots: [
+        { name: "四面山忠魂碑", lat: null, lon: null },
+        { name: "舞鶴空襲学徒犠牲者慰霊碑", lat: null, lon: null },
+        { name: "舞鶴海軍墓地", lat: null, lon: null },
+      ]
+    },
+    { 
+      key: "historic", type: "castle", 
+      label: "<b>城</b>（浜村城跡 / 溝尻城跡 / 行永城跡）",
+      spots: [
+        { name: "浜村城跡", lat: null, lon: null },
+        { name: "溝尻城跡", lat: null, lon: null },
+        { name: "行永城跡", lat: null, lon: null },
+      ]
+    },
+    { 
+      key: "tourism", type: "museum", 
+      label: "<b>博物館</b>（舞鶴の電気発祥の地 / 海軍記念館 / ルーシーちゃんの魔法の玩具博物館）",
+      spots: [
+        { name: "舞鶴の電気発祥の地", lat: null, lon: null },
+        { name: "海軍記念館", lat: null, lon: null },
+        { name: "ルーシーちゃんの魔法の玩具博物館", lat: null, lon: null },
+      ]
+    },
+    { 
+      key: "tourism", type: "attraction", 
+      label: "<b>観光地</b>",
+      spots: []
+    },
+  ],
+
   "飲食": [
     { key: "amenity", type: "restaurant", label: "<b>レストラン</b>（とと楽 / Cafe&Deli AZUR）" },
     { key: "amenity", type: "cafe", label: "<b>カフェ</b>（チャイム / こもれび / GOOD SOUND COFFEE / 木馬）" },
