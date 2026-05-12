@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>舞鶴市 統合スポット検索マップ</title>
+    <title>舞鶴市 検索マップ</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { margin: 0; padding: 20px; font-family: sans-serif; background-color: #f9f9f9; }
@@ -53,7 +53,7 @@
 </head>
 <body>
 
-    <h1>舞鶴市 グルメ＆観光スポットマップ</h1>
+    <h1>舞鶴市 EbikeProjeckt</h1>
     
     <div class="panel">
         <div class="flex-row">
@@ -62,7 +62,7 @@
                 <optgroup label="飲食店（青ピン）">
                     <option value="meal">お食事（和・洋・中・パスタ・麺など）</option>
                     <option value="alcohol_meat">お酒・肉（居酒屋・焼肉など）</option>
-                    <option value="cafe_sweets">カフェ・甘味</option>
+                    <option value="cafe_sweets">カフェ</option>
                 </optgroup>
                 <optgroup label="観光・レジャー（赤ピン）">
                     <option value="sightseeing">観光スポット・史跡・施設</option>
@@ -140,7 +140,7 @@
                 
                 await db.spots.bulkPut(data);
                 const count = await db.spots.count();
-                statusEl.innerHTML = `✅ 準備完了（全 ${count}件収録）。見たい場所をズームして検索してください。`;
+                statusEl.innerHTML = `✅ 準備完了（全 ${count}件収録）。`;
                 statusEl.style.color = "green";
             } catch (error) {
                 console.error(error);
@@ -213,7 +213,7 @@
                     markers.push(marker);
                 });
 
-                statusEl.innerHTML = `✅ 現在の画面内で <strong>${filteredResults.length}</strong> 件のスポットを発見しました。`;
+                statusEl.innerHTML = `✅ <strong>${filteredResults.length}</strong> 件のスポットを発見しました。`;
                 statusEl.style.color = "green";
                 
                 // ※意図的に map.fitBounds() を削除しています（見ている視点をキープするため）
