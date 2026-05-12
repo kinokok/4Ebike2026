@@ -164,9 +164,146 @@ const TagSelector = ({ onRunNavigation }) => {
 
 
 
-      <button onClick={handleSubmit} disabled={loading}>
-        {loading ? "ナビ生成中..." : "ナビを開始する"}
-      </button>
+      /*
+========================================
+ここに他メンバーから受け取った
+ルート情報が入る
+========================================
+*/
+
+const routeData = {
+
+  // 現在地
+  origin: {
+
+    // 緯度
+    lat: 35.681236,
+
+    // 経度
+    lng: 139.767125
+  },
+
+  // 経由地（複数対応）
+  waypoints: [
+
+    /*
+    {
+      lat: ,
+      lng:
+    }
+    */
+
+    {
+      lat: 35.698683,
+      lng: 139.774219
+    }
+
+  ],
+
+  // 目的地
+  destination: {
+
+    // 緯度
+    lat: 35.714765,
+
+    // 経度
+    lng: 139.796655
+  }
+};
+
+
+/*
+========================================
+Google Maps URL生成
+========================================
+*/
+
+function createGoogleMapsUrl(data) {
+
+  // 出発地
+  const origin =
+    `${data.origin.lat},${data.origin.lng}`;
+
+  // 目的地
+  const destination =
+    `${data.destination.lat},${data.destination.lng}`;
+
+  // Google Maps URL
+  let url =
+    "https://www.google.com/maps/dir/?api=1";
+
+  // 出発地追加
+  url += `&origin=${origin}`;
+
+  // 目的地追加
+  url += `&destination=${destination}`;
+
+  /*
+  ========================================
+  経由地が存在する場合
+  ========================================
+  */
+
+  if (data.waypoints.length > 0) {
+
+    const waypointString =
+      data.waypoints
+        .map(point =>
+          `${point.lat},${point.lng}`
+        )
+        .join("|");
+
+    url += `&waypoints=${waypointString}`;
+  }
+
+  // 移動方法
+  url += "&travelmode=driving";
+
+  return url;
+}
+
+
+/*
+========================================
+ナビ開始ボタン生成
+========================================
+*/
+
+// ボタン作成
+const startButton =
+  document.createElement("button");
+
+// ボタンの文字
+startButton.textContent = "ナビ開始";
+
+// ボタンの見た目
+startButton.style.padding = "15px 30px";
+startButton.style.fontSize = "18px";
+startButton.style.backgroundColor = "#4285F4";
+startButton.style.color = "white";
+startButton.style.border = "none";
+startButton.style.borderRadius = "8px";
+startButton.style.cursor = "pointer";
+
+// 画面に追加
+document.body.appendChild(startButton);
+
+
+/*
+========================================
+ボタンクリック時
+========================================
+*/
+
+startButton.addEventListener("click", () => {
+
+  // Google Maps URL生成
+  const mapsUrl =
+    createGoogleMapsUrl(routeData);
+
+  // Google Mapsを開く
+  window.open(mapsUrl, "_blank");
+});
 
       {loading && <div className="spinner" />}
 
