@@ -131,8 +131,8 @@ const TagSelector = ({ onRunNavigation }) => {
     const routeData = {
       // 現在地（TODO: Geolocation APIで取得予定）
       origin: {
-        lat: null,
-        lng: null,
+        lat: 35.495998,
+        lng: 135.439747,
       },
       // 経由地（selectedSpotsから生成）
       waypoints: selectedSpots.map((s) => ({
