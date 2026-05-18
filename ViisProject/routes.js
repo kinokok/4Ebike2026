@@ -1,4 +1,4 @@
-[
+const maizuruRoutesData = [
 {
   "route_id": "route_01",
   "category": "active",
@@ -69,4 +69,4 @@
     "node_12949988475"
   ]
 }
-]
+];
