@@ -6,7 +6,7 @@ const maizuruSpotsData = [
     "genre": "展望台・景勝地",
     "lat": 35.4648867,
     "lng": 135.3435973,
-    "image1": "https://tabi-mag.jp/wp-content/uploads/KY021901.jpg"
+    "image": "https://tabi-mag.jp/wp-content/uploads/KY021901.jpg"
     
     
   },
@@ -16,7 +16,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "博物館・美術館",
     "lat": 35.4890359,
-    "lng": 135.3678837
+    "lng": 135.3678837,
+    "image": "https://museumforum.pref.kyoto.lg.jp/uploads/image17a-1200x590.jpg"
   },
   {
     "id": "node_1434345385",
@@ -24,7 +25,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "博物館・美術館",
     "lat": 35.475204,
-    "lng": 135.3720502
+    "lng": 135.3720502,
+    "image": "https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/kinennkan1-1024x672.jpg"
   },
   {
     "id": "node_1435052714",
@@ -32,7 +34,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.5104266,
-    "lng": 135.3943366
+    "lng": 135.3943366,
+    "image": "https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/望郷慰霊之碑-1024x672.jpg"
   },
 
   {
@@ -41,7 +44,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4420412,
-    "lng": 135.3303957
+    "lng": 135.3303957,
+    "image": "https://tse1.mm.bing.net/th/id/OIP.TeLxVvrZcr6yLbh9LlQ7ugHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "id": "node_5369869254",
@@ -49,7 +53,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4781827,
-    "lng": 135.3677956
+    "lng": 135.3677956,
+    "image": "https://www.uminokyoto.jp/img_data/SP112_1.jpg"
   },
   {
     "id": "node_5369881229",
