@@ -62,7 +62,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4769927,
-    "lng": 135.3673525
+    "lng": 135.3673525,
+    "image": "https://tse3.mm.bing.net/th/id/OIP.CGf-zGotmGpAscj9_Im_nQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "id": "node_7759931682",
@@ -70,23 +71,26 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.446383,
-    "lng": 135.3300123
-  },
+    "lng": 135.3300123,
+    "image": "https://th.bing.com/th/id/OIP.J4NX9i3Ux3sL8Ibuc8JCbwHaE8?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3" 
+   },
   {
     "id": "node_1952174924",
     "name": "田辺城跡",
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4458735,
-    "lng": 135.3302603
+    "lng": 135.3302603,
+    "image" : "https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/1D1A0219-1024x683.jpg"
   },
   {
     "id": "node_7761278002",
-    "name": "舞鶴城址",
+    "name": "舞鶴城跡",
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4463917,
-    "lng": 135.3313762
+    "lng": 135.3313762,
+    "image":"https://tse1.mm.bing.net/th/id/OIP.4-O6I7NIgvWB29-YH2o5XwHaFj?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "id": "node_10756572728",
@@ -102,8 +106,9 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4487636,
-    "lng": 135.330074
-  },
+    "lng": 135.330074,
+    "image" : "https://th.bing.com/th/id/OIP.P_-HtH089LS-U5S75HrkpAHaFj?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3"
+    },
   {
     "id": "node_12270473034",
     "name": "重要文化財 木造深沙大将立像",
