@@ -18,7 +18,7 @@ const maizuruRoutesData = [
   "route_id": "route_02",
   "category": "history",
   "category_name": "歴史探訪",
-  "title": "観光名所巡り＆鉄板焼きルート",
+  "title": "観光名所巡り＆鉄板焼きコース",
   "description": "東舞鶴の観光名所「赤れんがパーク・博物館」を巡ったあと、鉄板焼き「バンビ」で広島風お好み焼きを楽しむことができるコースです！",
   "distance_km": 3,
   "time_min": 30,
