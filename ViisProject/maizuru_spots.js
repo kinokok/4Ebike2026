@@ -139,31 +139,6 @@ const maizuruSpotsData = [
     "lng": 135.3303818
   },
   {
-    "id": "node_7760870404",
-    "name": "田辺城城郭復元図",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4463682,
-    "lng": 135.330361
-  },
-  {
-    "id": "node_7760870405",
-    "name": "市指定史跡 田辺（舞鶴）城趾",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4463819,
-    "lng": 135.330363
-  },
-  {
-    "id": "node_7760870462",
-    "name": "田辺城城門",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4461125,
-    "lng": 135.3300123
-  },
-
-  {
     "id": "node_7761277898",
     "name": "舞鶴百撰 第四章 京極氏の治政",
     "group": "sightseeing",
