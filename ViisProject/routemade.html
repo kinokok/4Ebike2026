@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>舞鶴 E-bike ルート作成ビルダー</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { display: flex; flex-direction: column; height: 100vh; margin: 0; font-family: sans-serif; background: #eceff1; }
+        #header { padding: 12px 20px; background: #263238; color: white; display: flex; justify-content: space-between; align-items: center; }
+        #header h1 { margin: 0; font-size: 18px; }
+        #container { display: flex; flex: 1; overflow: hidden; }
+        
+        #map { flex: 2; z-index: 1; }
+        
+        #sidebar { flex: 1; min-width: 350px; background: #fff; padding: 20px; overflow-y: auto; box-shadow: -2px 0 5px rgba(0,0,0,0.1); z-index: 2; }
+        
+        h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #2196F3; padding-bottom: 5px; color: #333; }
+        h4 { margin: 15px 0 5px 0; font-size: 14px; color: #555; }
+        
+        /* フォームのスタイル */
+        .form-group { margin-bottom: 10px; display: flex; flex-direction: column; }
+        .form-group label { font-size: 12px; font-weight: bold; margin-bottom: 3px; color: #666; }
+        .form-group input, .form-group textarea, .form-group select { 
+            padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: sans-serif; font-size: 13px;
+        }
+        .form-group input:focus, .form-group textarea:focus { border-color: #2196F3; outline: none; }
+        .form-group textarea { resize: vertical; height: 60px; }
+        .flex-row { display: flex; gap: 10px; }
+        .flex-row .form-group { flex: 1; }
+
+        .spot-item { background: #e3f2fd; margin-bottom: 8px; padding: 10px; border-radius: 4px; border: 1px solid #bbdefb; display: flex; justify-content: space-between; font-size: 13px; align-items: center; }
+        .delete-btn { color: #d32f2f; cursor: pointer; font-weight: bold; padding: 2px 6px; }
+        .delete-btn:hover { background: #ffebee; border-radius: 3px; }
+        
+        button { cursor: pointer; padding: 8px 16px; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.8; }
+        .btn-copy { background: #4CAF50; color: white; border: none; border-radius: 4px; }
+        .btn-clear { background: #f44336; color: white; border: none; border-radius: 4px; margin-right: 10px; }
+        
+        pre { background: #263238; color: #80cbc4; padding: 15px; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <h1>🚲 舞鶴 E-bike ルート作成ビルダー</h1>
+    <div>
+        <button class="btn-clear" onclick="clearRoute()">ルート全消去</button>
+        <button class="btn-copy" onclick="copyJson()">JSONをコピー</button>
+    </div>
+</div>
+
+<div id="container">
+    <div id="map"></div>
+    
+    <div id="sidebar">
+        <h3>1. ルート情報の入力</h3>
+        <div class="flex-row">
+            <div class="form-group">
+                <label>ルートID (英数字)</label>
+                <input type="text" id="route_id" value="route_01" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>カテゴリ</label>
+                <select id="category" onchange="updateUI()">
+                    <option value="nonbiri">のんびり (nonbiri)</option>
+                    <option value="active">アクティブ (active)</option>
+                    <option value="history">歴史探訪 (history)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>ルートタイトル</label>
+            <input type="text" id="title" value="新規おすすめルート" oninput="updateUI()">
+        </div>
+        <div class="form-group">
+            <label>ルートの説明文</label>
+            <textarea id="description" oninput="updateUI()">ここにルートの魅力や特徴を入力してください。</textarea>
+        </div>
+        
+        <div class="flex-row">
+            <div class="form-group">
+                <label>総距離 (km)</label>
+                <input type="number" id="distance_km" value="10.0" step="0.1" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>目安時間 (分)</label>
+                <input type="number" id="time_min" value="60" step="5" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>難易度</label>
+                <select id="difficulty" onchange="updateUI()">
+                    <option value="★☆☆">★☆☆ (易)</option>
+                    <option value="★★☆" selected>★★☆ (普)</option>
+                    <option value="★★★">★★★ (難)</option>
+                </select>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 20px;">2. 経由地 (Waypoints)</h3>
+        <p style="font-size: 12px; color: #666; margin-top: 0;">左の地図のピンを順番にクリックして追加</p>
+        <div id="route-list"></div>
+        
+        <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
+        
+        <h3>3. 出力用 JSON</h3>
+        <pre id="json-output"></pre>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const maizuruCenter = [35.4751, 135.3338];
+    let map = L.map('map').setView(maizuruCenter, 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    let selectedRoute = [];
+    // 選択されたルートを繋ぐ線
+    let polyline = L.polyline([], {color: '#2196F3', weight: 5, opacity: 0.8}).addTo(map);
+
+    // 1. JSONデータの読み込み（ピン立て）
+    fetch('maizuru_spots.json')
+        .then(response => {
+            if (!response.ok) throw new Error("JSONが読み込めません");
+            return response.json();
+        })
+        .then(data => {
+            data.forEach(spot => {
+                const marker = L.marker([spot.lat, spot.lng]).addTo(map);
+                marker.bindTooltip(`<b>${spot.name}</b><br><span style="color:#666;font-size:11px;">クリックで追加</span>`);
+                
+                marker.on('click', () => {
+                    addToRoute(spot);
+                });
+            });
+        })
+        .catch(err => alert("⚠️ maizuru_spots.json が見つかりません。同じ階層に配置してください。"));
+
+    // 2. ルートにスポットを追加
+    function addToRoute(spot) {
+        selectedRoute.push(spot);
+        updateUI();
+    }
+
+    // 3. UI、ライン、JSON出力の更新処理
+    function updateUI() {
+        // UIリストの更新
+        const listEl = document.getElementById('route-list');
+        listEl.innerHTML = '';
+        
+        const latlngs = [];
+        const waypointsIDs = []; // JSON出力用のID配列
+        
+        selectedRoute.forEach((spot, index) => {
+            const item = document.createElement('div');
+            item.className = 'spot-item';
+            item.innerHTML = `
+                <span><b>${index + 1}.</b> ${spot.name}</span> 
+                <span class="delete-btn" onclick="removeItem(${index})">× 削除</span>
+            `;
+            listEl.appendChild(item);
+            
+            latlngs.push([spot.lat, spot.lng]);
+            waypointsIDs.push(spot.id); // JSONにはIDのみを入れる
+        });
+
+        // 地図上の線を更新
+        polyline.setLatLngs(latlngs);
+        
+        // フォーム要素から値を取得
+        const categorySelect = document.getElementById('category');
+        const categoryName = categorySelect.options[categorySelect.selectedIndex].text.split(' ')[0]; // 「のんびり (nonbiri)」から「のんびり」だけ抽出
+        
+        // JSONオブジェクトの構築
+        const outputObj = {
+            route_id: document.getElementById('route_id').value,
+            category: categorySelect.value,
+            category_name: categoryName,
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            distance_km: parseFloat(document.getElementById('distance_km').value) || 0,
+            time_min: parseInt(document.getElementById('time_min').value) || 0,
+            difficulty: document.getElementById('difficulty').value,
+            waypoints: waypointsIDs
+        };
+
+        // JSONテキストを画面に表示（インデント2スペース）
+        document.getElementById('json-output').innerText = JSON.stringify(outputObj, null, 2);
+    }
+
+    // 4. 特定のスポットを削除
+    function removeItem(index) {
+        selectedRoute.splice(index, 1);
+        updateUI();
+    }
+
+    // 5. 全消去
+    function clearRoute() {
+        if(confirm("選択した経由地をすべてリセットしますか？")) {
+            selectedRoute = [];
+            updateUI();
+        }
+    }
+
+    // 6. JSONコピー機能
+    function copyJson() {
+        const jsonText = document.getElementById('json-output').innerText;
+        navigator.clipboard.writeText(jsonText).then(() => {
+            alert("✅ JSONをクリップボードにコピーしました！\nこれを routes.json の配列の中に貼り付けてください。");
+        }).catch(err => {
+            alert("コピーに失敗しました。手動でコピーしてください。");
+        });
+    }
+
+    // 初期化として一回UIを更新しておく
+    updateUI();
+</script>
+
+</body>
+</html>
+
+//a
