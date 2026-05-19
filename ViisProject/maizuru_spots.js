@@ -6,7 +6,8 @@ const maizuruSpotsData = [
     "genre": "展望台・景勝地",
     "lat": 35.4648867,
     "lng": 135.3435973,
-    "image": "https://tabi-mag.jp/wp-content/uploads/KY021901.jpg"
+    "image": "https://tabi-mag.jp/wp-content/uploads/KY021901.jpg",
+    "image" : "https://www.iseshima-kanko.jp/storage/tourism_attractions/121074/responsive_images/hjTOUhPY66vZ7tZNclzmSD1NrHfQd7yc9EDYnPk0__775_1033.jpeg"
   },
   {
     "id": "node_1422960567",
