@@ -72,8 +72,13 @@
     <div id="map"></div>
 
     <!-- ライブラリの読み込み -->
+    <!-- ライブラリの読み込み -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+    
+    <!-- ローカルJavaScriptデータの読み込み -->
+    <script src="maizuru_spots.js"></script>
+    <script src="routes.js"></script>
     
     <!-- ローカルJavaScriptデータの読み込み -->
     <script src="maizuru_spots.js"></script>
@@ -103,7 +108,7 @@
         let routePolyline = null; 
         let routesData = [];      
 
-        // --- 2. データ同期読み込み処理 ---
+        // --- 2. データ同期同期読み込み処理処理 ---
         window.addEventListener('load', async () => {
             const statusEl = document.getElementById('status');
             try {
