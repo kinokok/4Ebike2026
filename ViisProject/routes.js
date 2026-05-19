@@ -16,19 +16,18 @@ const maizuruRoutesData = [
 },
 {
   "route_id": "route_02",
-  "category": "active",
-  "category_name": "アクティブ",
-  "title": "引揚記念館",
-  "description": "ここにルートの魅力や特徴を入力してください。",
-  "distance_km": 10,
-  "time_min": 60,
+  "category": "history",
+  "category_name": "歴史探訪",
+  "title": "観光名所巡り＆鉄板焼きコース",
+  "description": "東舞鶴の観光名所「赤れんがパーク・博物館」を巡ったあと、鉄板焼き「バンビ」で広島風お好み焼きを楽しむことができるコースです！",
+  "distance_km": 3,
+  "time_min": 30,
   "difficulty": "★★☆",
   "waypoints": [
-    "way_449027186",
-    "way_563042956",
-    "J000776415",
-    "node_12952852345",
-    "node_1434345385"
+    "node_1779165554120",
+    "way_183842148",
+    "way_43881285",
+    "J003686006"
   ]
 },
 {
