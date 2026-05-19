@@ -1,21 +1,17 @@
 const maizuruRoutesData = [
 {
   "route_id": "route_01",
-  "category": "active",
-  "category_name": "アクティブ",
-  "title": "ろく公園から港まで",
-  "description": "高専生御用達",
-  "distance_km": 10,
-  "time_min": 60,
-  "difficulty": "★★★",
+  "category": "nonbiri",
+  "category_name": "のんびり",
+  "title": "焼肉＆カフェで満腹コース",
+  "description": "個室焼肉「味道楽」で焼肉を楽しんだ後、カフェでコーヒーやケーキを堪能できるコースです！",
+  "distance_km": 1,
+  "time_min": 5,
+  "difficulty": "★★☆",
   "waypoints": [
-    "way_563042956",
-    "way_563042956",
-    "way_551657870",
-    "J000776415",
-    "way_559571471",
-    "node_7749843786",
-    "way_563048948"
+    "node_1779165554120",
+    "J001161862",
+    "J000505743"
   ]
 },
 {
