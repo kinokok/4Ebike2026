@@ -7,7 +7,7 @@ const maizuruRoutesData = [
   "description": "個室焼肉「味道楽」で焼肉を楽しんだ後、カフェでコーヒーやケーキを堪能できるコースです！",
   "distance_km": 1,
   "time_min": 5,
-  "difficulty": "★★☆",
+  "difficulty": "★☆☆",
   "waypoints": [
     "node_1779165554120",
     "J001161862",
