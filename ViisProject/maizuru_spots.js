@@ -703,7 +703,8 @@ const maizuruSpotsData = [
   "group": "meal",
   "genre": "ラーメン",
   "lat": 35.4805575,
-  "lng": 135.4234868
+  "lng": 135.4234868,
+  "image" : "https://cdn-ak.f.st-hatena.com/images/fotolife/y/yuu304810/20220213/20220213203914.jpg"
   },
   {
   "id": "node_1779166021130",
@@ -711,6 +712,7 @@ const maizuruSpotsData = [
   "group": "meal",
   "genre": "中華",
   "lat": 35.4805881,
-  "lng": 135.4251224
+  "lng": 135.4251224,
+  "image" : "https://th.bing.com/th/id/OIP.-5AfNfEDFI-F-b0knVe9qQHaF2?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
 ];
