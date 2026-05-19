@@ -167,14 +167,7 @@ const maizuruSpotsData = [
     "lat": 35.4461125,
     "lng": 135.3300123
   },
-  {
-    "id": "node_7761248663",
-    "name": "周辺案内図",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4457886,
-    "lng": 135.3299325
-  },
+
   {
     "id": "node_7761277898",
     "name": "舞鶴百撰 第四章 京極氏の治政",
