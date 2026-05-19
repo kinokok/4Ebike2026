@@ -5,7 +5,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "展望台・景勝地",
     "lat": 35.4648867,
-    "lng": 135.3435973
+    "lng": 135.3435973,
+    "image": "https://tabi-mag.jp/wp-content/uploads/KY021901.jpg"
   },
   {
     "id": "node_1422960567",
