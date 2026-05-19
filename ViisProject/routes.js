@@ -32,17 +32,17 @@ const maizuruRoutesData = [
 },
 {
   "route_id": "route_03",
-  "category": "nonbiri",
-  "category_name": "のんびり",
-  "title": "横に行く",
-  "description": "ここにルートの魅力や特徴を入力してください。",
-  "distance_km": 10,
-  "time_min": 60,
+  "category": "active",
+  "category_name": "アクティブ",
+  "title": "カジュアルフレンチ＆公園コース",
+  "description": "お洒落なビストロでフレンチ料理を楽しんだあと、海の見える前島みなと公園でまったりできるコースです！",
+  "distance_km": 2,
+  "time_min": 20,
   "difficulty": "★★☆",
   "waypoints": [
-    "way_563042956",
-    "way_449027186",
-    "way_1026963916"
+    "node_1779165554120",
+    "J003736064",
+    "way_563048948"
   ]
 },
 {
