@@ -28,3 +28,5 @@
 
 
 スポット情報はOverpass API、ホットペッパーAPIで取得
+
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
