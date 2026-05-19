@@ -129,38 +129,6 @@ const maizuruSpotsData = [
     "lng": 135.4469197
   },
   {
-    "id": "node_12270473052",
-    "name": "伝 細川幽斎公作庭",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4763731,
-    "lng": 135.4468426
-  },
-  {
-    "id": "node_12270473053",
-    "name": "鶴亀の庭（小池庭）",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4764627,
-    "lng": 135.4468721
-  },
-  {
-    "id": "node_12270481721",
-    "name": "金剛院京都府歴史的自然環境保全地域",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4763393,
-    "lng": 135.4468845
-  },
-  {
-    "id": "node_12270481722",
-    "name": "金剛院の指定文化財",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4763008,
-    "lng": 135.4468235
-  },
-  {
     "id": "node_12273054113",
     "name": "重要文化財 金剛院塔婆",
     "group": "sightseeing",
@@ -177,36 +145,12 @@ const maizuruSpotsData = [
     "lng": 135.4486243
   },
   {
-    "id": "node_12273054120",
-    "name": "重要文化財 金剛院塔婆（三重塔）",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4754721,
-    "lng": 135.4483983
-  },
-  {
     "id": "node_12280532357",
     "name": "「京都の自然二百選」金剛院",
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4756053,
     "lng": 135.4481753
-  },
-  {
-    "id": "node_12280532358",
-    "name": "金剛院永代供養墓廟 慈恩",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4756653,
-    "lng": 135.4481312
-  },
-  {
-    "id": "node_12280532366",
-    "name": "金剛院永代供養墓廟",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4756651,
-    "lng": 135.4481607
   },
   {
     "id": "node_12949988475",
@@ -235,7 +179,7 @@ const maizuruSpotsData = [
   },
   {
     "id": "node_13011586124",
-    "name": "C58 113",
+    "name": "C58 113 (蒸気機関車)",
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4764681,
@@ -448,14 +392,6 @@ const maizuruSpotsData = [
     "genre": "公園",
     "lat": 35.4877252,
     "lng": 135.3223569
-  },
-  {
-    "id": "way_1307675034",
-    "name": "金剛院塔婆",
-    "group": "sightseeing",
-    "genre": "史跡",
-    "lat": 35.4755037,
-    "lng": 135.4484778
   },
   {
     "id": "J000442718",
@@ -777,13 +713,4 @@ const maizuruSpotsData = [
   "lat": 35.4805881,
   "lng": 135.4251224
   },
-  {
-  "id": "node_1779166103450",
-  "name": "ゆうロック ボルダリングジム",
-  "group": "activity",
-  "genre": "アクティビティ",
-  "lat": 35.4810335,
-  "lng": 135.4251117
-  },
-
 ];
