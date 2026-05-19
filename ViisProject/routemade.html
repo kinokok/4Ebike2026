@@ -208,7 +208,7 @@
     function copyJson() {
         const jsonText = document.getElementById('json-output').innerText;
         navigator.clipboard.writeText(jsonText).then(() => {
-            alert("✅ JSONをクリップボードにコピーしました！\nこれを routes.js の配列（maizuruRoutesData）の中に貼り付けてください。");
+            alert("✅ JSONをクリップボードにコピー\nこれを routes.js の配列（maizuruRoutesData）の中に貼り付けてください。");
         }).catch(err => {
             alert("コピーに失敗しました。手動でコピーしてください。");
         });
