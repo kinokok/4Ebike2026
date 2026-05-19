@@ -71,18 +71,8 @@
     <div id="status">システム準備中...</div>
     <div id="map"></div>
 
-    <!-- ライブラリの読み込み -->
-    <!-- ライブラリの読み込み -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
-    
-    <!-- ローカルJavaScriptデータの読み込み -->
-    <script src="maizuru_spots.js"></script>
-    <script src="routes.js"></script>
-    
-    <!-- ローカルJavaScriptデータの読み込み -->
-    <script src="maizuru_spots.js"></script>
-    <script src="routes.js"></script>
     
     <script>
         // --- 1. データベースと地図の初期化 ---
@@ -108,38 +98,35 @@
         let routePolyline = null; 
         let routesData = [];      
 
-        // --- 2. データ同期同期読み込み処理処理 ---
+        // --- 2. データ読み込み ---
         window.addEventListener('load', async () => {
             const statusEl = document.getElementById('status');
             try {
-                // maizuru_spots.js の変数 maizuruSpotsData が存在するかチェック
-                if (typeof maizuruSpotsData === 'undefined' || typeof maizuruRoutesData === 'undefined') {
-                    throw new Error("データファイル(maizuru_spots.js または routes.js)が正しく読み込めません。");
-                }
+                const spotRes = await fetch('maizuru_spots.json');
+                const spotData = await spotRes.json();
+                await db.spots.bulkPut(spotData);
 
-                // Dexie(IndexedDB) にデータをインポート
-                await db.spots.bulkPut(maizuruSpotsData);
-
-                // ルートデータをグローバル変数に格納
-                routesData = maizuruRoutesData;
+                const routeRes = await fetch('routes.json');
+                routesData = await routeRes.json();
                 renderRouteList();
 
                 statusEl.innerHTML = `✅ 準備完了（スポット ${await db.spots.count()}件 / ルート ${routesData.length}件）`;
                 statusEl.style.color = "green";
             } catch (error) {
-                statusEl.innerHTML = `❌ データ設定エラー: ${error.message}`;
+                statusEl.innerHTML = `❌ データ読込エラー: ${error.message}`;
                 statusEl.style.color = "red";
             }
         });
 
-        // --- アイコン判定関数 ---
+        // --- ★ アイコン判定関数（復活） ---
         function getIconForSpot(spot) {
             const isFacility = (spot.group === 'sightseeing' || spot.group === 'activity');
             return isFacility ? redIcon : blueIcon;
         }
 
-        // --- 3. タブ切り替え制御 ---
+        // --- 3. タブ切り替え制御（クリア機能追加） ---
         function switchTab(tabId, btnElement) {
+            // ★ タブを切り替えたら地図上のピンや線を消す
             clearMap();
 
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -148,6 +135,7 @@
             document.getElementById(tabId).classList.add('active');
             btnElement.classList.add('active');
             
+            // ステータス文言もリセット
             document.getElementById('status').innerHTML = "準備完了";
         }
 
@@ -169,6 +157,7 @@
             });
 
             results.forEach(spot => {
+                // ★ 判定関数を使ってアイコンを出し分ける
                 const marker = L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) })
                     .bindPopup(`<b>${spot.name}</b><br><span style="font-size:11px;color:#666;">${spot.genre}</span>`);
                 markerGroup.addLayer(marker);
@@ -209,6 +198,7 @@
                     latlngs.push([spot.lat, spot.lng]);
                     googleWaypoints.push(`${spot.lat},${spot.lng}`);
                     
+                    // ★ ルート描画時も、判定関数を使ってアイコンを出し分ける
                     const marker = L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) })
                         .bindPopup(`<b>${i + 1}. ${spot.name}</b><br><span style="font-size:11px;color:#666;">${spot.genre}</span>`);
                     markerGroup.addLayer(marker);
@@ -240,8 +230,10 @@
                 map.removeLayer(routePolyline);
                 routePolyline = null;
             }
-            document.getElementById('status').innerHTML = ""; 
+            document.getElementById('status').innerHTML = ""; // ステータスもクリア
         }
     </script>
 </body>
 </html>
+
+//aa

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>舞鶴 E-Bike ルート作成ビルダー</title>
+    <title>舞鶴 E-bike ルート作成ビルダー</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { display: flex; flex-direction: column; height: 100vh; margin: 0; font-family: sans-serif; background: #eceff1; }
@@ -44,7 +44,7 @@
 <body>
 
 <div id="header">
-    <h1>🚲 舞鶴 E-Bike ルート作成ビルダー</h1>
+    <h1>🚲 舞鶴 E-bike ルート作成ビルダー</h1>
     <div>
         <button class="btn-clear" onclick="clearRoute()">ルート全消去</button>
         <button class="btn-copy" onclick="copyJson()">JSONをコピー</button>
@@ -111,9 +111,6 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- ローカルJavaScriptデータの読み込み（fetchエラーを回避） -->
-<script src="maizuru_spots.js"></script>
-
 <script>
     const maizuruCenter = [35.4751, 135.3338];
     let map = L.map('map').setView(maizuruCenter, 13);
@@ -123,21 +120,25 @@
 
     let selectedRoute = [];
     // 選択されたルートを繋ぐ線
-    let polyline = L.polyline([], {color: '#E91E63', weight: 5, opacity: 0.8}).addTo(map);
+    let polyline = L.polyline([], {color: '#2196F3', weight: 5, opacity: 0.8}).addTo(map);
 
-    // 1. スポットデータの初期化（maizuru_spots.js から展開）
-    if (typeof maizuruSpotsData !== 'undefined') {
-        maizuruSpotsData.forEach(spot => {
-            const marker = L.marker([spot.lat, spot.lng]).addTo(map);
-            marker.bindTooltip(`<b>${spot.name}</b><br><span style="color:#666;font-size:11px;">クリックで追加</span>`);
-            
-            marker.on('click', () => {
-                addToRoute(spot);
+    // 1. JSONデータの読み込み（ピン立て）
+    fetch('maizuru_spots.json')
+        .then(response => {
+            if (!response.ok) throw new Error("JSONが読み込めません");
+            return response.json();
+        })
+        .then(data => {
+            data.forEach(spot => {
+                const marker = L.marker([spot.lat, spot.lng]).addTo(map);
+                marker.bindTooltip(`<b>${spot.name}</b><br><span style="color:#666;font-size:11px;">クリックで追加</span>`);
+                
+                marker.on('click', () => {
+                    addToRoute(spot);
+                });
             });
-        });
-    } else {
-        alert("⚠️ maizuru_spots.js が正しく読み込めませんでした。同じフォルダにあるか確認してください。");
-    }
+        })
+        .catch(err => alert("⚠️ maizuru_spots.json が見つかりません。同じ階層に配置してください。"));
 
     // 2. ルートにスポットを追加
     function addToRoute(spot) {
@@ -147,11 +148,12 @@
 
     // 3. UI、ライン、JSON出力の更新処理
     function updateUI() {
+        // UIリストの更新
         const listEl = document.getElementById('route-list');
         listEl.innerHTML = '';
         
         const latlngs = [];
-        const waypointsIDs = [];
+        const waypointsIDs = []; // JSON出力用のID配列
         
         selectedRoute.forEach((spot, index) => {
             const item = document.createElement('div');
@@ -163,7 +165,7 @@
             listEl.appendChild(item);
             
             latlngs.push([spot.lat, spot.lng]);
-            waypointsIDs.push(spot.id);
+            waypointsIDs.push(spot.id); // JSONにはIDのみを入れる
         });
 
         // 地図上の線を更新
@@ -214,9 +216,11 @@
         });
     }
 
-    // 初期化
+    // 初期化として一回UIを更新しておく
     updateUI();
 </script>
 
 </body>
 </html>
+
+//a

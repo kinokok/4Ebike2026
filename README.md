@@ -12,8 +12,8 @@
 
 `ViisProject/`<br>
 ├── `main.html` 地図表示<br>
-├── `maizuru_spots.js` スポットデータ<br>
-└── `routes.js` ルートデータ<br>
+├── `maizuru_spots.json` スポットデータ<br>
+└── `routes.json` ルートデータ<br>
 
 <br>
 
