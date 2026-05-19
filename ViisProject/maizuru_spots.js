@@ -195,12 +195,12 @@ const maizuruSpotsData = [
     "lng": 135.3314565
   },
   {
-    "id": "node_7761277949",
-    "name": "史跡 田辺城跡",
+    "id": "node_1952174924",
+    "name": "田辺城跡",
     "group": "sightseeing",
     "genre": "史跡",
-    "lat": 35.4462431,
-    "lng": 135.3318912
+    "lat": 35.4458735,
+    "lng": 135.3302603
   },
   {
     "id": "node_7761278000",
