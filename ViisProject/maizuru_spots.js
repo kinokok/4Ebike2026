@@ -115,7 +115,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4766079,
-    "lng": 135.4469244
+    "lng": 135.4469244,
+    "image" : "https://www1.city.obama.fukui.jp/obm/rekisi/sekai_isan/HP-Images/132.jpg"
   },
   {
     "id": "node_12270473036",
@@ -131,7 +132,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4762732,
-    "lng": 135.4469197
+    "lng": 135.4469197,
+    "image" : "https://tse4.mm.bing.net/th/id/OIP.MfYqBE4QSWkWY3x7L0qO6QHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "id": "node_12273054113",
@@ -147,7 +149,8 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4753825,
-    "lng": 135.4486243
+    "lng": 135.4486243,
+    "image" : "https://tse2.mm.bing.net/th/id/OIP.9vkCHQnD8nM9iFWhJPYnBgHaF0?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "id": "node_12280532357",
@@ -155,7 +158,7 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4756053,
-    "lng": 135.4481753
+    "lng": 135.4481753,
   },
   {
     "id": "node_12949988475",
