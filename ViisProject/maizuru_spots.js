@@ -6,8 +6,8 @@ const maizuruSpotsData = [
     "genre": "展望台・景勝地",
     "lat": 35.4648867,
     "lng": 135.3435973,
-    "image": "https://tabi-mag.jp/wp-content/uploads/KY021901.jpg"
-    
+    "image": "https://tabi-mag.jp/wp-content/uploads/KY021901.jpg",
+    "memo" : "五老山展望台は、舞鶴市の五老山に位置する展望台で、舞鶴湾や周囲の美しい景色を一望できます。特に夕暮れ時には、赤く染まる空と海のコントラストが絶景で、多くの観光客が訪れるスポットです。展望台には駐車場もあり、アクセスも便利です。"
     
   },
   {
