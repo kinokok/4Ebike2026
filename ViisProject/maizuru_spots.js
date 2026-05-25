@@ -27,8 +27,9 @@ const maizuruSpotsData = [
     "genre": "博物館・美術館",
     "lat": 35.475204,
     "lng": 135.3720502,
-    "image": "https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/kinennkan1-1024x672.jpg"
-  },
+    "image": "https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/kinennkan1-1024x672.jpg",
+    "memo" : "昭和８年に建造された旧海軍機関学校大講堂で、旧日本海軍の貴重な資料を展示している" 
+   },
   {
     "id": "node_1435052714",
     "name": "望郷慰霊之碑",
@@ -36,7 +37,8 @@ const maizuruSpotsData = [
     "genre": "史跡",
     "lat": 35.5104266,
     "lng": 135.3943366,
-    "image": "https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/望郷慰霊之碑-1024x672.jpg"
+    "image": "https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/望郷慰霊之碑-1024x672.jpg",
+    "memo" : "舞鶴市に存在する慰霊碑で、戦争や災害で亡くなった人を追悼する目的で建てられている"
   },
 
   {
@@ -46,7 +48,8 @@ const maizuruSpotsData = [
     "genre": "史跡",
     "lat": 35.4420412,
     "lng": 135.3303957,
-    "image": "https://tse1.mm.bing.net/th/id/OIP.TeLxVvrZcr6yLbh9LlQ7ugHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+    "image": "https://tse1.mm.bing.net/th/id/OIP.TeLxVvrZcr6yLbh9LlQ7ugHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "memo" : "舞鶴市の観光情報を入手、案内を行ってくれる案内施設"
   },
   {
     "id": "node_5369869254",
@@ -55,7 +58,8 @@ const maizuruSpotsData = [
     "genre": "史跡",
     "lat": 35.4781827,
     "lng": 135.3677956,
-    "image": "https://www.uminokyoto.jp/img_data/SP112_1.jpg"
+    "image": "https://www.uminokyoto.jp/img_data/SP112_1.jpg",
+    "memo" : "海軍ゆかりの歴史を感じられる建物で、かつて東郷平八郎が住んでいた場所"
   },
   {
     "id": "node_5369881229",
@@ -64,7 +68,8 @@ const maizuruSpotsData = [
     "genre": "史跡",
     "lat": 35.4769927,
     "lng": 135.3673525,
-    "image": "https://tse3.mm.bing.net/th/id/OIP.CGf-zGotmGpAscj9_Im_nQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+    "image": "https://tse3.mm.bing.net/th/id/OIP.CGf-zGotmGpAscj9_Im_nQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "memo" : "飯野寅吉は、明治から昭和にかけて活躍した日本の海軍軍人で、舞鶴市にある像は彼の功績を称えるために建てられたもの"
   },
   {
     "id": "node_7759931682",
@@ -74,6 +79,7 @@ const maizuruSpotsData = [
     "lat": 35.446383,
     "lng": 135.3300123,
     "image": "https://th.bing.com/th/id/OIP.J4NX9i3Ux3sL8Ibuc8JCbwHaE8?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3" 
+    "memo" : "舞鶴市に位置する公園で、自然と緑の空間を提供している"
    },
   {
     "id": "node_1952174924",
