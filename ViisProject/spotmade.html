@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>舞鶴 スポットデータ編集ツール</title>
+    <title>舞鶴 E-bike ルート作成ビルダー</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { display: flex; flex-direction: column; height: 100vh; margin: 0; font-family: sans-serif; background: #eceff1; }
-        #header { padding: 12px 20px; background: #37474f; color: white; display: flex; justify-content: space-between; align-items: center; }
+        #header { padding: 12px 20px; background: #263238; color: white; display: flex; justify-content: space-between; align-items: center; }
         #header h1 { margin: 0; font-size: 18px; }
         #container { display: flex; flex: 1; overflow: hidden; }
         
@@ -15,91 +15,126 @@
         
         #sidebar { flex: 1; min-width: 350px; background: #fff; padding: 20px; overflow-y: auto; box-shadow: -2px 0 5px rgba(0,0,0,0.1); z-index: 2; }
         
-        h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #009688; padding-bottom: 5px; color: #333; }
+        h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #2196F3; padding-bottom: 5px; color: #333; }
+        h4 { margin: 15px 0 5px 0; font-size: 14px; color: #555; }
         
         /* フォームのスタイル */
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
-        .form-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #666; }
-        .form-group input, .form-group select { 
-            padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: sans-serif; font-size: 14px;
+        .form-group { margin-bottom: 10px; display: flex; flex-direction: column; }
+        .form-group label { font-size: 12px; font-weight: bold; margin-bottom: 3px; color: #666; }
+        .form-group input, .form-group textarea, .form-group select { 
+            padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: sans-serif; font-size: 13px;
         }
-        .form-group input:focus { border-color: #009688; outline: none; }
+        .form-group input:focus, .form-group textarea:focus { border-color: #2196F3; outline: none; }
+        .form-group textarea { resize: vertical; height: 60px; }
         .flex-row { display: flex; gap: 10px; }
         .flex-row .form-group { flex: 1; }
-        
-        button { cursor: pointer; padding: 8px 16px; font-weight: bold; transition: 0.2s; border: none; border-radius: 4px; }
-        button:hover { opacity: 0.8; }
-        .btn-copy { background: #4CAF50; color: white; width: 100%; margin-top: 10px; padding: 12px;}
-        .btn-new { background: #2196F3; color: white; margin-bottom: 15px; }
 
-        pre { background: #263238; color: #80cbc4; padding: 15px; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; border-radius: 4px; }
+        .spot-item { background: #e3f2fd; margin-bottom: 8px; padding: 10px; border-radius: 4px; border: 1px solid #bbdefb; display: flex; justify-content: space-between; font-size: 13px; align-items: center; }
+        .delete-btn { color: #d32f2f; cursor: pointer; font-weight: bold; padding: 2px 6px; }
+        .delete-btn:hover { background: #ffebee; border-radius: 3px; }
         
-        .hint { font-size: 12px; color: #e91e63; font-weight: bold; margin-bottom: 15px; }
+        button { cursor: pointer; padding: 8px 16px; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.8; }
+        .btn-copy { background: #4CAF50; color: white; border: none; border-radius: 4px; }
+        .btn-clear { background: #f44336; color: white; border: none; border-radius: 4px; margin-right: 10px; }
+        
+        pre { background: #263238; color: #80cbc4; padding: 15px; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; border-radius: 4px; }
+
+        /* 現在地ボタン */
+        #locate-btn {
+            position: absolute;
+            bottom: 80px;
+            left: 10px;
+            z-index: 1000;
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            width: 34px;
+            height: 34px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+        }
+        #locate-btn:hover { background: #f0f0f0; }
+        #locate-btn.tracking { border-color: #2196F3; }
     </style>
 </head>
 <body>
 
 <div id="header">
-    <h1>📍 スポットデータ編集ツール</h1>
-</div>
-
-<div id="container">
-    <div id="map"></div>
-    
-    <div id="sidebar">
-        <button class="btn-new" onclick="startNewSpot()">＋ 新規スポットを作成</button>
-
-        <h3>スポット情報</h3>
-        <p class="hint">地図をクリックするか、赤いピンをドラッグして座標を取得</p>
-
-        <div class="form-group">
-            <label>ID (自動生成または既存ID)</label>
-            <input type="text" id="spot_id" oninput="updateJSON()">
-        </div>
-
-        <div class="form-group">
-            <label>スポット名</label>
-            <input type="text" id="spot_name" placeholder="例: 五老山展望台" oninput="updateJSON()">
-        </div>
-
-        <div class="flex-row">
-            <div class="form-group">
-                <label>グループ (group)</label>
-                <select id="spot_group" onchange="updateJSON()">
-                    <option value="sightseeing">観光・史跡 (sightseeing)</option>
-                    <option value="activity">アクティビティ (activity)</option>
-                    <option value="meal">お食事 (meal)</option>
-                    <option value="alcohol_meat">お酒・肉 (alcohol_meat)</option>
-                    <option value="cafe_sweets">カフェ (cafe_sweets)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>ジャンル名 (genre)</label>
-                <input type="text" id="spot_genre" placeholder="例: 展望台・景勝地" oninput="updateJSON()">
-            </div>
-        </div>
-
-        <div class="flex-row">
-            <div class="form-group">
-                <label>緯度 (lat)</label>
-                <input type="number" id="spot_lat" step="0.0000001" oninput="updateMarkerFromInput()">
-            </div>
-            <div class="form-group">
-                <label>経度 (lng)</label>
-                <input type="number" id="spot_lng" step="0.0000001" oninput="updateMarkerFromInput()">
-            </div>
-        </div>
-
-        <h3 style="margin-top: 20px;">出力用 JSON (1件分)</h3>
-        <pre id="json-output"></pre>
+    <h1>🚲 舞鶴 E-bike ルート作成ビルダー</h1>
+    <div>
+        <button class="btn-clear" onclick="clearRoute()">ルート全消去</button>
         <button class="btn-copy" onclick="copyJson()">JSONをコピー</button>
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- 既存データを表示用に読み込み -->
-<script src="maizuru_spots.js"></script>
+<div id="container">
+    <div style="flex:2;position:relative;">
+        <div id="map" style="width:100%;height:100%;"></div>
+        <button id="locate-btn" title="現在地に移動">📍</button>
+    </div>
+    
+    <div id="sidebar">
+        <h3>1. ルート情報の入力</h3>
+        <div class="flex-row">
+            <div class="form-group">
+                <label>ルートID (英数字)</label>
+                <input type="text" id="route_id" value="route_01" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>カテゴリ</label>
+                <select id="category" onchange="updateUI()">
+                    <option value="nonbiri">のんびり (nonbiri)</option>
+                    <option value="active">アクティブ (active)</option>
+                    <option value="history">歴史探訪 (history)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>ルートタイトル</label>
+            <input type="text" id="title" value="新規おすすめルート" oninput="updateUI()">
+        </div>
+        <div class="form-group">
+            <label>ルートの説明文</label>
+            <textarea id="description" oninput="updateUI()">ここにルートの魅力や特徴を入力してください。</textarea>
+        </div>
+        
+        <div class="flex-row">
+            <div class="form-group">
+                <label>総距離 (km)</label>
+                <input type="number" id="distance_km" value="10.0" step="0.1" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>目安時間 (分)</label>
+                <input type="number" id="time_min" value="60" step="5" oninput="updateUI()">
+            </div>
+            <div class="form-group">
+                <label>難易度</label>
+                <select id="difficulty" onchange="updateUI()">
+                    <option value="★☆☆">★☆☆ (易)</option>
+                    <option value="★★☆" selected>★★☆ (普)</option>
+                    <option value="★★★">★★★ (難)</option>
+                </select>
+            </div>
+        </div>
 
+        <h3 style="margin-top: 20px;">2. 経由地 (Waypoints)</h3>
+        <p style="font-size: 12px; color: #666; margin-top: 0;">左の地図のピンを順番にクリックして追加</p>
+        <div id="route-list"></div>
+        
+        <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
+        
+        <h3>3. 出力用 JSON</h3>
+        <pre id="json-output"></pre>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const maizuruCenter = [35.4751, 135.3338];
     let map = L.map('map').setView(maizuruCenter, 13);
@@ -107,109 +142,165 @@
         attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // 編集用のドラッグ可能なマーカー（赤色）
-    const editIcon = new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-        iconSize: [25, 41], iconAnchor: [12, 41]
-    });
-    let editMarker = L.marker(maizuruCenter, { icon: editIcon, draggable: true }).addTo(map);
+    let selectedRoute = [];
+    // 選択されたルートを繋ぐ線
+    let polyline = L.polyline([], {color: '#2196F3', weight: 5, opacity: 0.8}).addTo(map);
 
-    // 既存のスポットを薄い青色で表示（参考用）
-    const existingIcon = new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-        iconSize: [25, 41], iconAnchor: [12, 41], className: 'existing-marker'
-    });
-    
-    // 既存データの読み込みと表示
-    if (typeof maizuruSpotsData !== 'undefined') {
-        maizuruSpotsData.forEach(spot => {
-            const marker = L.marker([spot.lat, spot.lng], { icon: existingIcon, opacity: 0.6 }).addTo(map);
-            marker.bindTooltip(`既存: ${spot.name}`);
-            
-            // 既存ピンをクリックしたら編集モードに切り替え
-            marker.on('click', () => {
-                loadExistingSpot(spot);
+    // 1. JSONデータの読み込み（ピン立て）
+    fetch('maizuru_spots.json')
+        .then(response => {
+            if (!response.ok) throw new Error("JSONが読み込めません");
+            return response.json();
+        })
+        .then(data => {
+            data.forEach(spot => {
+                const marker = L.marker([spot.lat, spot.lng]).addTo(map);
+                marker.bindTooltip(`<b>${spot.name}</b><br><span style="color:#666;font-size:11px;">クリックで追加</span>`);
+                
+                marker.on('click', () => {
+                    addToRoute(spot);
+                });
             });
+        })
+        .catch(err => alert("⚠️ maizuru_spots.json が見つかりません。同じ階層に配置してください。"));
+
+    // 2. ルートにスポットを追加
+    function addToRoute(spot) {
+        selectedRoute.push(spot);
+        updateUI();
+    }
+
+    // 3. UI、ライン、JSON出力の更新処理
+    function updateUI() {
+        // UIリストの更新
+        const listEl = document.getElementById('route-list');
+        listEl.innerHTML = '';
+        
+        const latlngs = [];
+        const waypointsIDs = []; // JSON出力用のID配列
+        
+        selectedRoute.forEach((spot, index) => {
+            const item = document.createElement('div');
+            item.className = 'spot-item';
+            item.innerHTML = `
+                <span><b>${index + 1}.</b> ${spot.name}</span> 
+                <span class="delete-btn" onclick="removeItem(${index})">× 削除</span>
+            `;
+            listEl.appendChild(item);
+            
+            latlngs.push([spot.lat, spot.lng]);
+            waypointsIDs.push(spot.id); // JSONにはIDのみを入れる
         });
+
+        // 地図上の線を更新
+        polyline.setLatLngs(latlngs);
+        
+        // フォーム要素から値を取得
+        const categorySelect = document.getElementById('category');
+        const categoryName = categorySelect.options[categorySelect.selectedIndex].text.split(' ')[0]; // 「のんびり (nonbiri)」から「のんびり」だけ抽出
+        
+        // JSONオブジェクトの構築
+        const outputObj = {
+            route_id: document.getElementById('route_id').value,
+            category: categorySelect.value,
+            category_name: categoryName,
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            distance_km: parseFloat(document.getElementById('distance_km').value) || 0,
+            time_min: parseInt(document.getElementById('time_min').value) || 0,
+            difficulty: document.getElementById('difficulty').value,
+            waypoints: waypointsIDs
+        };
+
+        // JSONテキストを画面に表示（インデント2スペース）
+        document.getElementById('json-output').innerText = JSON.stringify(outputObj, null, 2);
     }
 
-    // 地図をクリックした時に編集マーカーを移動
-    map.on('click', function(e) {
-        updatePosition(e.latlng.lat, e.latlng.lng);
-    });
-
-    // マーカーをドラッグして離した時に座標を更新
-    editMarker.on('dragend', function(e) {
-        const position = editMarker.getLatLng();
-        updatePosition(position.lat, position.lng);
-    });
-
-    // 座標をフォームに反映し、JSONを更新
-    function updatePosition(lat, lng) {
-        editMarker.setLatLng([lat, lng]);
-        document.getElementById('spot_lat').value = lat.toFixed(7);
-        document.getElementById('spot_lng').value = lng.toFixed(7);
-        updateJSON();
+    // 4. 特定のスポットを削除
+    function removeItem(index) {
+        selectedRoute.splice(index, 1);
+        updateUI();
     }
 
-    // フォームの緯度経度を手入力した時にマーカーを動かす
-    function updateMarkerFromInput() {
-        const lat = parseFloat(document.getElementById('spot_lat').value);
-        const lng = parseFloat(document.getElementById('spot_lng').value);
-        if (!isNaN(lat) && !isNaN(lng)) {
-            editMarker.setLatLng([lat, lng]);
-            map.panTo([lat, lng]);
-            updateJSON();
+    // 5. 全消去
+    function clearRoute() {
+        if(confirm("選択した経由地をすべてリセットしますか？")) {
+            selectedRoute = [];
+            updateUI();
         }
     }
 
-    // 既存のスポットを編集フォームに読み込む
-    function loadExistingSpot(spot) {
-        document.getElementById('spot_id').value = spot.id;
-        document.getElementById('spot_name').value = spot.name;
-        document.getElementById('spot_group').value = spot.group;
-        document.getElementById('spot_genre').value = spot.genre;
-        updatePosition(spot.lat, spot.lng);
-        map.panTo([spot.lat, spot.lng]);
-    }
-
-    // 新規スポットの入力状態にリセット
-    function startNewSpot() {
-        const newId = "node_" + Date.now(); // タイムスタンプで一意なIDを生成
-        document.getElementById('spot_id').value = newId;
-        document.getElementById('spot_name').value = "";
-        document.getElementById('spot_genre').value = "";
-        
-        // マーカーを画面中央に移動
-        const center = map.getCenter();
-        updatePosition(center.lat, center.lng);
-        document.getElementById('spot_name').focus();
-    }
-
-    // JSON出力の更新
-    function updateJSON() {
-        const obj = {
-            id: document.getElementById('spot_id').value,
-            name: document.getElementById('spot_name').value,
-            group: document.getElementById('spot_group').value,
-            genre: document.getElementById('spot_genre').value,
-            lat: parseFloat(document.getElementById('spot_lat').value) || 0,
-            lng: parseFloat(document.getElementById('spot_lng').value) || 0
-        };
-        document.getElementById('json-output').innerText = JSON.stringify(obj, null, 2) + ",";
-    }
-
-    // クリップボードにコピー
+    // 6. JSONコピー機能
     function copyJson() {
-        const text = document.getElementById('json-output').innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            alert("コピーしました！\nmaizuru_spots.js の配列内に貼り付けてください。");
+        const jsonText = document.getElementById('json-output').innerText;
+        navigator.clipboard.writeText(jsonText).then(() => {
+            alert("✅ JSONをクリップボードにコピーしました！\nこれを routes.json の配列の中に貼り付けてください。");
+        }).catch(err => {
+            alert("コピーに失敗しました。手動でコピーしてください。");
         });
     }
 
-    // 初期化
-    startNewSpot();
+    // 初期化として一回UIを更新しておく
+    updateUI();
 
+    // --- 現在地追跡 ---
+    let locationWatchId = null;
+    let locationMarker = null;
+    let locationCircle = null;
+    const locateBtn = document.getElementById('locate-btn');
+
+    const locationIcon = L.divIcon({
+        className: '',
+        html: '<div style="width:16px;height:16px;background:#2196F3;border:3px solid #fff;border-radius:50%;box-shadow:0 0 6px rgba(33,150,243,0.8);"></div>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+    });
+
+    function updateLocationOnMap(pos) {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const accuracy = pos.coords.accuracy;
+
+        if (!locationMarker) {
+            locationMarker = L.marker([lat, lng], { icon: locationIcon, zIndexOffset: 1000 })
+                .addTo(map)
+                .bindPopup('現在地');
+            locationCircle = L.circle([lat, lng], { radius: accuracy, color: '#2196F3', fillColor: '#2196F3', fillOpacity: 0.1, weight: 1 }).addTo(map);
+            map.setView([lat, lng], 14);
+        } else {
+            locationMarker.setLatLng([lat, lng]);
+            locationCircle.setLatLng([lat, lng]).setRadius(accuracy);
+        }
+    }
+
+    function startLocationTracking() {
+        if (!navigator.geolocation) {
+            alert('このブラウザは位置情報をサポートしていません。');
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(pos => {
+            updateLocationOnMap(pos);
+            locationWatchId = navigator.geolocation.watchPosition(updateLocationOnMap, err => console.warn(err.message), {
+                enableHighAccuracy: true,
+                maximumAge: 5000,
+                timeout: 10000
+            });
+            locateBtn.classList.add('tracking');
+            locateBtn.title = '現在地を追跡中';
+        }, err => console.warn(err.message), { enableHighAccuracy: true });
+    }
+
+    locateBtn.addEventListener('click', () => {
+        if (locationMarker) {
+            map.setView(locationMarker.getLatLng(), 15);
+        } else {
+            startLocationTracking();
+        }
+    });
+
+    // ページ読み込み時に自動で追跡開始
+    startLocationTracking();
 </script>
+
 </body>
 </html>
