@@ -82,7 +82,7 @@
     <script>
         // --- 1. データベースと地図の初期化 ---
         const db = new Dexie("MaizuruTotalSpotsDB");
-        db.version(1).stores({ spots: "id, name, group, genre, lat, lng" });
+        db.version(1).stores({ spots: "id, name, group, genre, lat, lng, memo" });
 
         // 青ピン（飲食店用）
         const blueIcon = new L.Icon({
