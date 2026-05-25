@@ -89,6 +89,7 @@ const maizuruSpotsData = [
     "lat": 35.4458735,
     "lng": 135.3302603,
     "image" : "https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/1D1A0219-1024x683.jpg"
+    "memo" : "田辺城は、戦国時代に築かれた日本の城で、現在はその跡地が保存されており、歴史的な価値を持つ観光スポットとなっている"
   },
   {
     "id": "node_7761278002",
@@ -98,6 +99,7 @@ const maizuruSpotsData = [
     "lat": 35.4463917,
     "lng": 135.3313762,
     "image":"https://tse1.mm.bing.net/th/id/OIP.4-O6I7NIgvWB29-YH2o5XwHaFj?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+    "memo" : "舞鶴城は、戦国時代に築かれた日本の城で、現在はその跡地が保存されており、歴史的な価値を持つ観光スポットとなっている"
   },
   {
     "id": "node_10756572728",
