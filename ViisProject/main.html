@@ -82,7 +82,7 @@
     <script>
         // --- 1. データベースと地図の初期化 ---
         const db = new Dexie("MaizuruTotalSpotsDB");
-        db.version(1).stores({ spots: "id, name, group, genre, lat, lng" });
+        db.version(1).stores({ spots: "id, name, group, genre, lat, lng, memo" });
 
         // 青ピン（飲食店用）
         const blueIcon = new L.Icon({
@@ -164,11 +164,24 @@
             });
 
             results.forEach(spot => {
+                // ボタンを押したときに、隠れていた説明文を表示する仕掛けを入れます
+                const popupId = `memo-${spot.id}`;
                 const popupContent = `
                     <div style="text-align:center; width:180px;">
                         <b style="font-size:14px;">${spot.name}</b><br>
                         ${spot.image ? `<img src="${spot.image}" style="width:100%; height:auto; border-radius:4px; margin-top:8px;">` : ''}
-                        <div style="font-size:11px; color:#666; margin-top:5px;">${spot.genre}</div>
+                        
+                        ${spot.memo ? `
+                            <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
+                                    style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
+                                📖 説明を見る
+                            </button>
+                            <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
+                                ${spot.memo}
+                            </p>
+                        ` : ''}
+                        
+                        <div style="font-size:11px; color:#666; margin-top:8px;">${spot.genre}</div>
                     </div>
                 `;
                 const marker = L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popupContent);
@@ -210,11 +223,23 @@
                     latlngs.push([spot.lat, spot.lng]);
                     googleWaypoints.push(`${spot.lat},${spot.lng}`);
                     
+                    const popupId = `route-memo-${spot.id}-${i}`;
                     const popupContent = `
                         <div style="text-align:center; width:180px;">
                             <b style="font-size:14px;">${i + 1}. ${spot.name}</b><br>
                             ${spot.image ? `<img src="${spot.image}" style="width:100%; height:auto; border-radius:4px; margin-top:8px;">` : ''}
-                            <div style="font-size:11px; color:#666; margin-top:5px;">${spot.genre}</div>
+                            
+                            ${spot.memo ? `
+                                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
+                                        style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
+                                    📖 説明を見る
+                                </button>
+                                <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
+                                    ${spot.memo}
+                                </p>
+                            ` : ''}
+                            
+                            <div style="font-size:11px; color:#666; margin-top:8px;">${spot.genre}</div>
                         </div>
                     `;
                     const marker = L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popupContent);

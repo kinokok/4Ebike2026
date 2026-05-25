@@ -17,7 +17,8 @@ const maizuruSpotsData = [
     "genre": "博物館・美術館",
     "lat": 35.4890359,
     "lng": 135.3678837,
-    "image": "https://museumforum.pref.kyoto.lg.jp/uploads/image17a-1200x590.jpg"
+    "image": "https://museumforum.pref.kyoto.lg.jp/uploads/image17a-1200x590.jpg",
+    "memo" : "舞鶴市に位置する水産生物の標本を展示する博物館で、海洋生物に関する教育と研究が行われています。"
   },
   {
     "id": "node_1434345385",
