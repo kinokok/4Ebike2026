@@ -196,7 +196,7 @@ function applyLang() {
 
 // ===== DB・地図初期化 =====
 const db = new Dexie("MaizuruTotalSpotsDB");
-db.version(5).stores({ spots: "id, name, group, genre, lat, lng" });
+db.version(5).stores({ spots: "id, name, group, genre, lat, lng, image, memo" });
 
 const blueIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
