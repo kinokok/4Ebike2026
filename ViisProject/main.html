@@ -270,7 +270,7 @@ async function searchFromLocalDB() {
 
         const popup = `<div style="text-align:center;width:180px">
             <b style="font-size:14px">${nameDisplay}</b><br>
-            ${spot.image1 ? `<img src="${spot.image1}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
             
             ${currentMemo ? `
                 <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
@@ -325,7 +325,7 @@ async function drawRoute(routeId) {
 
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${nameDisplay}</b><br>
-            ${spot.image1 ? `<img src="${spot.image1}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
             
             ${currentMemo ? `
                 <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
@@ -489,7 +489,7 @@ async function generateRoute() {
 
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${name}</b><br>
-            ${s.image1 ? `<img src="${s.image1}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            ${s.image ? `<img src="${s.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
             
             ${currentMemo ? `
                 <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
