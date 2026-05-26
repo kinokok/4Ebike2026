@@ -426,6 +426,26 @@ function spotScore(spot) {
 }
 
 async function generateRoute() {
+    // 目的地に番号を追加
+    function sortByNearest(spots) {
+    const start = locationMarker
+        ? { lat: locationMarker.getLatLng().lat, lng: locationMarker.getLatLng().lng }
+        : spots[0];
+    const result = [], remaining = [...spots];
+    let current = start;
+    while (remaining.length) {
+        let minD = Infinity, minI = 0;
+        remaining.forEach((s, i) => {
+            const d = haversine(current, s);
+            if (d < minD) { minD = d; minI = i; }
+        });
+        result.push(remaining.splice(minI, 1)[0]);
+        current = result[result.length - 1];
+    }
+    return result;
+}
+    //
+
     const nStops = parseInt(document.getElementById('spots-slider').value);
     const maxDist = parseFloat(document.getElementById('dist-slider').value);
     const resultEl = document.getElementById('gen-result');
@@ -465,6 +485,8 @@ async function generateRoute() {
     }
 
     if (!best) { resultEl.innerHTML = t('ルートが見つかりませんでした', 'No route found'); return; }
+
+    best = sortByNearest(best); //番号
 
     let totalDist = 0;
     for (let i = 1; i < best.length; i++) totalDist += haversine(best[i-1], best[i]);
