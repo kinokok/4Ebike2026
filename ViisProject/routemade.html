@@ -39,27 +39,6 @@
         .btn-clear { background: #f44336; color: white; border: none; border-radius: 4px; margin-right: 10px; }
         
         pre { background: #263238; color: #80cbc4; padding: 15px; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; border-radius: 4px; }
-
-        /* 現在地ボタン */
-        #locate-btn {
-            position: absolute;
-            bottom: 80px;
-            left: 10px;
-            z-index: 1000;
-            background: #fff;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-            width: 34px;
-            height: 34px;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
-        }
-        #locate-btn:hover { background: #f0f0f0; }
-        #locate-btn.tracking { border-color: #2196F3; }
     </style>
 </head>
 <body>
@@ -73,10 +52,7 @@
 </div>
 
 <div id="container">
-    <div style="flex:2;position:relative;">
-        <div id="map" style="width:100%;height:100%;"></div>
-        <button id="locate-btn" title="現在地に移動">📍</button>
-    </div>
+    <div id="map"></div>
     
     <div id="sidebar">
         <h3>1. ルート情報の入力</h3>
@@ -135,6 +111,7 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="maizuru_spots.js"></script>
 <script>
     const maizuruCenter = [35.4751, 135.3338];
     let map = L.map('map').setView(maizuruCenter, 13);
@@ -146,23 +123,18 @@
     // 選択されたルートを繋ぐ線
     let polyline = L.polyline([], {color: '#2196F3', weight: 5, opacity: 0.8}).addTo(map);
 
-    // 1. JSONデータの読み込み（ピン立て）
-    fetch('maizuru_spots.json')
-        .then(response => {
-            if (!response.ok) throw new Error("JSONが読み込めません");
-            return response.json();
-        })
-        .then(data => {
-            data.forEach(spot => {
-                const marker = L.marker([spot.lat, spot.lng]).addTo(map);
-                marker.bindTooltip(`<b>${spot.name}</b><br><span style="color:#666;font-size:11px;">クリックで追加</span>`);
-                
-                marker.on('click', () => {
-                    addToRoute(spot);
-                });
+    // 1. JSデータの読み込み（ピン立て）
+    if (typeof maizuruSpotsData === 'undefined') {
+        alert("⚠️ maizuru_spots.js が見つかりません。同じ階層に配置してください。");
+    } else {
+        maizuruSpotsData.forEach(spot => {
+            const marker = L.marker([spot.lat, spot.lng]).addTo(map);
+            marker.bindTooltip(`<b>${spot.name}</b><br><span style="color:#666;font-size:11px;">クリックで追加</span>`);
+            marker.on('click', () => {
+                addToRoute(spot);
             });
-        })
-        .catch(err => alert("⚠️ maizuru_spots.json が見つかりません。同じ階層に配置してください。"));
+        });
+    }
 
     // 2. ルートにスポットを追加
     function addToRoute(spot) {
@@ -242,64 +214,6 @@
 
     // 初期化として一回UIを更新しておく
     updateUI();
-
-    // --- 現在地追跡 ---
-    let locationWatchId = null;
-    let locationMarker = null;
-    let locationCircle = null;
-    const locateBtn = document.getElementById('locate-btn');
-
-    const locationIcon = L.divIcon({
-        className: '',
-        html: '<div style="width:16px;height:16px;background:#2196F3;border:3px solid #fff;border-radius:50%;box-shadow:0 0 6px rgba(33,150,243,0.8);"></div>',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-    });
-
-    function updateLocationOnMap(pos) {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        const accuracy = pos.coords.accuracy;
-
-        if (!locationMarker) {
-            locationMarker = L.marker([lat, lng], { icon: locationIcon, zIndexOffset: 1000 })
-                .addTo(map)
-                .bindPopup('現在地');
-            locationCircle = L.circle([lat, lng], { radius: accuracy, color: '#2196F3', fillColor: '#2196F3', fillOpacity: 0.1, weight: 1 }).addTo(map);
-            map.setView([lat, lng], 14);
-        } else {
-            locationMarker.setLatLng([lat, lng]);
-            locationCircle.setLatLng([lat, lng]).setRadius(accuracy);
-        }
-    }
-
-    function startLocationTracking() {
-        if (!navigator.geolocation) {
-            alert('このブラウザは位置情報をサポートしていません。');
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(pos => {
-            updateLocationOnMap(pos);
-            locationWatchId = navigator.geolocation.watchPosition(updateLocationOnMap, err => console.warn(err.message), {
-                enableHighAccuracy: true,
-                maximumAge: 5000,
-                timeout: 10000
-            });
-            locateBtn.classList.add('tracking');
-            locateBtn.title = '現在地を追跡中';
-        }, err => console.warn(err.message), { enableHighAccuracy: true });
-    }
-
-    locateBtn.addEventListener('click', () => {
-        if (locationMarker) {
-            map.setView(locationMarker.getLatLng(), 15);
-        } else {
-            startLocationTracking();
-        }
-    });
-
-    // ページ読み込み時に自動で追跡開始
-    startLocationTracking();
 </script>
 
 </body>
