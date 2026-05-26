@@ -417,10 +417,35 @@ function haversine(a, b) {
 function spotScore(spot) {
     const di = (spot.indoor || 0) - padY;
     const df = (spot.fun || 0) - padX;
-    return Math.sqrt(di*di + df*df);
+    let score = Math.sqrt(di*di + df*df);
+    if (locationMaker) {
+        const loc = locationMaker.getLatLng();
+        const d = haversine({ lat: loc.lat, lng: loc.lng }, spot);
+        score += d * 0.05;
+    }
 }
 
 async function generateRoute() {
+    // 目的地に番号を追加
+    function sortByNearest(spots) {
+    const start = locationMarker
+        ? { lat: locationMarker.getLatLng().lat, lng: locationMarker.getLatLng().lng }
+        : spots[0];
+    const result = [], remaining = [...spots];
+    let current = start;
+    while (remaining.length) {
+        let minD = Infinity, minI = 0;
+        remaining.forEach((s, i) => {
+            const d = haversine(current, s);
+            if (d < minD) { minD = d; minI = i; }
+        });
+        result.push(remaining.splice(minI, 1)[0]);
+        current = result[result.length - 1];
+    }
+    return result;
+}
+    //
+
     const nStops = parseInt(document.getElementById('spots-slider').value);
     const maxDist = parseFloat(document.getElementById('dist-slider').value);
     const resultEl = document.getElementById('gen-result');
@@ -429,12 +454,29 @@ async function generateRoute() {
 
     const allSpots = await db.spots.toArray();
     const sorted = [...allSpots].sort((a, b) => spotScore(a) - spotScore(b));
-    const candidates = sorted.slice(0, Math.min(25, sorted.length));
+    const candidates = sorted.slice(0, Math.min(50, sorted.length));
 
     let best = null, bestScore = Infinity;
+    /*
     for (let trial = 0; trial < 300; trial++) {
         const shuffled = [...candidates].sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, nStops);
+    */
+    for (let trial = 0; trial < 300; trial++) {
+        const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    
+    // groupごとに最大2件までに制限しながら選ぶ
+    const selected = [];
+    const usedGroups = {};
+    for (const spot of shuffled) {
+        if (selected.length >= nStops) break;
+        const count = usedGroups[spot.group] || 0;
+        if (selected.length < 2) continue; // 最低2件あればOK
+        if (count >= 2) continue; // 同じgroupは最大2件まで
+        selected.push(spot);
+        usedGroups[spot.group] = count + 1;
+    }
+    if (selected.length < nStops) continue; // 条件満たせなければスキップ
         let dist = 0;
         for (let i = 1; i < selected.length; i++) dist += haversine(selected[i-1], selected[i]);
         const sc = selected.reduce((a, s) => a + spotScore(s), 0) / selected.length;
@@ -444,6 +486,8 @@ async function generateRoute() {
     }
 
     if (!best) { resultEl.innerHTML = t('ルートが見つかりませんでした', 'No route found'); return; }
+
+    best = sortByNearest(best); //番号
 
     let totalDist = 0;
     for (let i = 1; i < best.length; i++) totalDist += haversine(best[i-1], best[i]);

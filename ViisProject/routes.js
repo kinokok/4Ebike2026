@@ -44,5 +44,20 @@ const maizuruRoutesData = [
     "J003736064",
     "way_563048948"
   ]
+},
+{
+  "route_id": "route_04",
+  "category": "active",
+  "category_name": "アクティブ",
+  "title": "イタリアン＆青葉山ろく公園コース",
+  "description": "「モルト・ヴォーノ・ニーナ」で本格イタリアンを楽しんだ後、青葉青ろく公園で遊べるルートです！",
+  "distance_km": 7,
+  "time_min": 30,
+  "difficulty": "★★★",
+  "waypoints": [
+    "node_1779165554120",
+    "J000776415",
+    "way_563042956"
+  ]
 }
 ];
