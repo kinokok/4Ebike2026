@@ -454,7 +454,7 @@ async function generateRoute() {
 
     const allSpots = await db.spots.toArray();
     const sorted = [...allSpots].sort((a, b) => spotScore(a) - spotScore(b));
-    const candidates = sorted.slice(0, Math.min(25, sorted.length));
+    const candidates = sorted.slice(0, Math.min(50, sorted.length));
 
     let best = null, bestScore = Infinity;
     /*
@@ -471,7 +471,8 @@ async function generateRoute() {
     for (const spot of shuffled) {
         if (selected.length >= nStops) break;
         const count = usedGroups[spot.group] || 0;
-        if (count >= 2) continue; // 同じgroupは2件まで
+        if (selected.length < 2) continue; // 最低2件あればOK
+        if (count >= 2) continue; // 同じgroupは最大2件まで
         selected.push(spot);
         usedGroups[spot.group] = count + 1;
     }
