@@ -744,6 +744,14 @@ const maizuruSpotsData = [
   "lng": 135.4251224,
   "image" : "https://th.bing.com/th/id/OIP.-5AfNfEDFI-F-b0knVe9qQHaF2?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
+  {
+  "id": "node_1779166103450",
+  "name": "ゆうロック ボルダリングジム",
+  "group": "activity",
+  "genre": "アクティビティ",
+  "lat": 35.4810335,
+  "lng": 135.4251117
+  },
 ];
 
 // とれとれ市場
