@@ -196,7 +196,7 @@ function applyLang() {
 
 // ===== DB・地図初期化 =====
 const db = new Dexie("MaizuruTotalSpotsDB");
-db.version(5).stores({ spots: "id, name, group, genre, lat, lng, image, memo, memo_en" });
+db.version(5).stores({ spots: "id, name, group, genre, lat, lng" });
 
 const blueIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
@@ -263,26 +263,10 @@ async function searchFromLocalDB() {
     });
     results.forEach(spot => {
         const nameDisplay = lang === 'en' && spot.name_en ? spot.name_en : spot.name;
-        
-        // メモの言語判定と一意のID生成
-        const currentMemo = lang === 'en' && spot.memo_en ? spot.memo_en : spot.memo;
-        const popupId = `memo-${spot.id}`;
-
         const popup = `<div style="text-align:center;width:180px">
             <b style="font-size:14px">${nameDisplay}</b><br>
-            ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            
-            ${currentMemo ? `
-                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
-                        style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
-                    ${t('📖 説明を見る', '📖 View Info')}
-                </button>
-                <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
-                    ${currentMemo}
-                </p>
-            ` : ''}
-            
-            <div style="font-size:11px;color:#666;margin-top:8px">${spot.genre}</div>
+            ${spot.image1 ? `<img src="${spot.image1}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            <div style="font-size:11px;color:#666;margin-top:4px">${spot.genre}</div>
         </div>`;
         L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popup).addTo(markerGroup);
     });
@@ -318,26 +302,10 @@ async function drawRoute(routeId) {
         latlngs.push([spot.lat, spot.lng]);
         waypoints.push(`${spot.lat},${spot.lng}`);
         const nameDisplay = lang === 'en' && spot.name_en ? spot.name_en : spot.name;
-        
-        // メモの言語判定とルート用の一意のID生成
-        const currentMemo = lang === 'en' && spot.memo_en ? spot.memo_en : spot.memo;
-        const popupId = `route-memo-${spot.id}-${i}`;
-
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${nameDisplay}</b><br>
-            ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            
-            ${currentMemo ? `
-                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
-                        style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
-                    ${t('📖 説明を見る', '📖 View Info')}
-                </button>
-                <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
-                    ${currentMemo}
-                </p>
-            ` : ''}
-            
-            <div style="font-size:11px;color:#666;margin-top:8px">${spot.genre}</div>
+            ${spot.image1 ? `<img src="${spot.image1}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            <div style="font-size:11px;color:#666;margin-top:4px">${spot.genre}</div>
         </div>`;
         L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popup).addTo(markerGroup);
     }
@@ -482,30 +450,8 @@ async function generateRoute() {
     const latlngs = best.map(s => [s.lat, s.lng]);
     best.forEach((s, i) => {
         const name = lang === 'en' && s.name_en ? s.name_en : s.name;
-        
-        // メモの言語判定と生成ルート用の一意のID生成
-        const currentMemo = lang === 'en' && s.memo_en ? s.memo_en : s.memo;
-        const popupId = `gen-memo-${s.id}-${i}`;
-
-        const popup = `<div style="text-align:center;width:180px">
-            <b>${i+1}. ${name}</b><br>
-            ${s.image ? `<img src="${s.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            
-            ${currentMemo ? `
-                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
-                        style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
-                    ${t('📖 説明を見る', '📖 View Info')}
-                </button>
-                <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
-                    ${currentMemo}
-                </p>
-            ` : ''}
-            
-            <div style="font-size:11px;color:#666;margin-top:8px"><small>${s.genre}</small></div>
-        </div>`;
-
         L.marker([s.lat, s.lng], { icon: getIconForSpot(s) })
-            .bindPopup(popup)
+            .bindPopup(`<b>${i+1}. ${name}</b><br><small>${s.genre}</small>`)
             .addTo(markerGroup);
     });
     routePolyline = L.polyline(latlngs, { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
