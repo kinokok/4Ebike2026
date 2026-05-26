@@ -348,7 +348,9 @@ const maizuruSpotsData = [
     "group": "activity",
     "genre": "公園",
     "lat": 35.5009849,
-    "lng": 135.4399197
+    "lng": 135.4399197,
+    "image":"https://tatetsunagi.com/wp-content/uploads/2020/08/AobasanrokuparkL-2.jpg",
+    "memo": "青葉山ろく公園は、舞鶴市に位置する自然豊かな公園で、ハイキングやピクニックに最適なスポットです。公園内には遊歩道が整備されており、四季折々の美しい景色を楽しむことができます。また、展望台からは舞鶴湾や周囲の山々を一望できるため、写真撮影にもおすすめの場所です。"
   },
   {
     "id": "way_563048948",
@@ -480,7 +482,9 @@ const maizuruSpotsData = [
     "group": "meal",
     "genre": "イタリアン・フレンチ",
     "lat": 35.4808726141,
-    "lng": 135.4320978312
+    "lng": 135.4320978312,
+    "image": "https://tse2.mm.bing.net/th/id/OIP.7nNp_dRQAV8kq6x5Ywzg_QHaFj?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "memo" : "舞鶴市に位置するイタリアン・フレンチレストランで、特別な日にぴったりの空間が魅力的なスポット"
   },
   {
     "id": "J000969480",
