@@ -243,7 +243,7 @@ const maizuruSpotsData = [
     "genre": "公園",
     "lat": 35.4755023,
     "lng": 135.3840998,
-    "image": "https://tse3.mm.bing.net/th/id/OIP.xppP_Ba7DlGRfhzNq9s20gHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "image": "https://www.city.maizuru.kyoto.jp/shisei/cmsfiles/contents/0000007/7546/akarennga7.jpg",
     "memo" : "舞鶴の歴史的建造物である赤れんが倉庫を中心としたエリアで、観光スポットやイベントスペースとして利用されている"
   },
   {
