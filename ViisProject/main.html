@@ -417,7 +417,12 @@ function haversine(a, b) {
 function spotScore(spot) {
     const di = (spot.indoor || 0) - padY;
     const df = (spot.fun || 0) - padX;
-    return Math.sqrt(di*di + df*df);
+    let score = Math.sqrt(di*di + df*df);
+    if (locationMaker) {
+        const loc = locationMaker.getLatLng();
+        const d = haversine({ lat: loc.lat, lng: loc.lng }, spot);
+        score += d * 0.05;
+    }
 }
 
 async function generateRoute() {
@@ -432,9 +437,25 @@ async function generateRoute() {
     const candidates = sorted.slice(0, Math.min(25, sorted.length));
 
     let best = null, bestScore = Infinity;
+    /*
     for (let trial = 0; trial < 300; trial++) {
         const shuffled = [...candidates].sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, nStops);
+    */
+    for (let trial = 0; trial < 300; trial++) {
+        const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    
+    // groupごとに最大2件までに制限しながら選ぶ
+    const selected = [];
+    const usedGroups = {};
+    for (const spot of shuffled) {
+        if (selected.length >= nStops) break;
+        const count = usedGroups[spot.group] || 0;
+        if (count >= 2) continue; // 同じgroupは2件まで
+        selected.push(spot);
+        usedGroups[spot.group] = count + 1;
+    }
+    if (selected.length < nStops) continue; // 条件満たせなければスキップ
         let dist = 0;
         for (let i = 1; i < selected.length; i++) dist += haversine(selected[i-1], selected[i]);
         const sc = selected.reduce((a, s) => a + spotScore(s), 0) / selected.length;
