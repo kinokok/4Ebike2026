@@ -12,8 +12,11 @@
 
 `ViisProject/`<br>
 ├── `main.html` 地図表示<br>
-├── `maizuru_spots.json` スポットデータ<br>
-└── `routes.json` ルートデータ<br>
+├── `maizuru_spots.js` スポットデータ<br>
+├── `maizuru_spots_rejected.js` 削除済みスポットデータ<br>
+├── `routes.js` ルートデータ<br>
+├── `routemade.html` ルート追加用<br>
+└── `spotmade.html` スポット追加用<br>
 
 <br>
 
@@ -27,6 +30,5 @@
 - ピンに画像を追加
 
 
-スポット情報はOverpass API、ホットペッパーAPIで取得
 
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+スポット情報はOverpass API、ホットペッパーAPIで取得

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>舞鶴 スポットデータ編集ツール</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { display: flex; flex-direction: column; height: 100vh; margin: 0; font-family: sans-serif; background: #eceff1; }
+        #header { padding: 12px 20px; background: #37474f; color: white; display: flex; justify-content: space-between; align-items: center; }
+        #header h1 { margin: 0; font-size: 18px; }
+        #container { display: flex; flex: 1; overflow: hidden; }
+        
+        #map { flex: 2; z-index: 1; }
+        
+        #sidebar { flex: 1; min-width: 350px; background: #fff; padding: 20px; overflow-y: auto; box-shadow: -2px 0 5px rgba(0,0,0,0.1); z-index: 2; }
+        
+        h3 { margin-top: 0; font-size: 16px; border-bottom: 2px solid #009688; padding-bottom: 5px; color: #333; }
+        
+        /* フォームのスタイル */
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .form-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #666; }
+        .form-group input, .form-group select { 
+            padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: sans-serif; font-size: 14px;
+        }
+        .form-group input:focus { border-color: #009688; outline: none; }
+        .flex-row { display: flex; gap: 10px; }
+        .flex-row .form-group { flex: 1; }
+        
+        button { cursor: pointer; padding: 8px 16px; font-weight: bold; transition: 0.2s; border: none; border-radius: 4px; }
+        button:hover { opacity: 0.8; }
+        .btn-copy { background: #4CAF50; color: white; width: 100%; margin-top: 10px; padding: 12px;}
+        .btn-new { background: #2196F3; color: white; margin-bottom: 15px; }
+
+        pre { background: #263238; color: #80cbc4; padding: 15px; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; border-radius: 4px; }
+        
+        .hint { font-size: 12px; color: #e91e63; font-weight: bold; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <h1>📍 スポットデータ編集ツール</h1>
+</div>
+
+<div id="container">
+    <div id="map"></div>
+    
+    <div id="sidebar">
+        <button class="btn-new" onclick="startNewSpot()">＋ 新規スポットを作成</button>
+
+        <h3>スポット情報</h3>
+        <p class="hint">地図をクリックするか、赤いピンをドラッグして座標を取得</p>
+
+        <div class="form-group">
+            <label>ID (自動生成または既存ID)</label>
+            <input type="text" id="spot_id" oninput="updateJSON()">
+        </div>
+
+        <div class="form-group">
+            <label>スポット名</label>
+            <input type="text" id="spot_name" placeholder="例: 五老山展望台" oninput="updateJSON()">
+        </div>
+
+        <div class="flex-row">
+            <div class="form-group">
+                <label>グループ (group)</label>
+                <select id="spot_group" onchange="updateJSON()">
+                    <option value="sightseeing">観光・史跡 (sightseeing)</option>
+                    <option value="activity">アクティビティ (activity)</option>
+                    <option value="meal">お食事 (meal)</option>
+                    <option value="alcohol_meat">お酒・肉 (alcohol_meat)</option>
+                    <option value="cafe_sweets">カフェ (cafe_sweets)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>ジャンル名 (genre)</label>
+                <input type="text" id="spot_genre" placeholder="例: 展望台・景勝地" oninput="updateJSON()">
+            </div>
+        </div>
+
+        <div class="flex-row">
+            <div class="form-group">
+                <label>緯度 (lat)</label>
+                <input type="number" id="spot_lat" step="0.0000001" oninput="updateMarkerFromInput()">
+            </div>
+            <div class="form-group">
+                <label>経度 (lng)</label>
+                <input type="number" id="spot_lng" step="0.0000001" oninput="updateMarkerFromInput()">
+            </div>
+        </div>
+
+        <h3 style="margin-top: 20px;">出力用 JSON (1件分)</h3>
+        <pre id="json-output"></pre>
+        <button class="btn-copy" onclick="copyJson()">JSONをコピー</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- 既存データを表示用に読み込み -->
+<script src="maizuru_spots.js"></script>
+
+<script>
+    const maizuruCenter = [35.4751, 135.3338];
+    let map = L.map('map').setView(maizuruCenter, 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // 編集用のドラッグ可能なマーカー（赤色）
+    const editIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        iconSize: [25, 41], iconAnchor: [12, 41]
+    });
+    let editMarker = L.marker(maizuruCenter, { icon: editIcon, draggable: true }).addTo(map);
+
+    // 既存のスポットを薄い青色で表示（参考用）
+    const existingIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+        iconSize: [25, 41], iconAnchor: [12, 41], className: 'existing-marker'
+    });
+    
+    // 既存データの読み込みと表示
+    if (typeof maizuruSpotsData !== 'undefined') {
+        maizuruSpotsData.forEach(spot => {
+            const marker = L.marker([spot.lat, spot.lng], { icon: existingIcon, opacity: 0.6 }).addTo(map);
+            marker.bindTooltip(`既存: ${spot.name}`);
+            
+            // 既存ピンをクリックしたら編集モードに切り替え
+            marker.on('click', () => {
+                loadExistingSpot(spot);
+            });
+        });
+    }
+
+    // 地図をクリックした時に編集マーカーを移動
+    map.on('click', function(e) {
+        updatePosition(e.latlng.lat, e.latlng.lng);
+    });
+
+    // マーカーをドラッグして離した時に座標を更新
+    editMarker.on('dragend', function(e) {
+        const position = editMarker.getLatLng();
+        updatePosition(position.lat, position.lng);
+    });
+
+    // 座標をフォームに反映し、JSONを更新
+    function updatePosition(lat, lng) {
+        editMarker.setLatLng([lat, lng]);
+        document.getElementById('spot_lat').value = lat.toFixed(7);
+        document.getElementById('spot_lng').value = lng.toFixed(7);
+        updateJSON();
+    }
+
+    // フォームの緯度経度を手入力した時にマーカーを動かす
+    function updateMarkerFromInput() {
+        const lat = parseFloat(document.getElementById('spot_lat').value);
+        const lng = parseFloat(document.getElementById('spot_lng').value);
+        if (!isNaN(lat) && !isNaN(lng)) {
+            editMarker.setLatLng([lat, lng]);
+            map.panTo([lat, lng]);
+            updateJSON();
+        }
+    }
+
+    // 既存のスポットを編集フォームに読み込む
+    function loadExistingSpot(spot) {
+        document.getElementById('spot_id').value = spot.id;
+        document.getElementById('spot_name').value = spot.name;
+        document.getElementById('spot_group').value = spot.group;
+        document.getElementById('spot_genre').value = spot.genre;
+        updatePosition(spot.lat, spot.lng);
+        map.panTo([spot.lat, spot.lng]);
+    }
+
+    // 新規スポットの入力状態にリセット
+    function startNewSpot() {
+        const newId = "node_" + Date.now(); // タイムスタンプで一意なIDを生成
+        document.getElementById('spot_id').value = newId;
+        document.getElementById('spot_name').value = "";
+        document.getElementById('spot_genre').value = "";
+        
+        // マーカーを画面中央に移動
+        const center = map.getCenter();
+        updatePosition(center.lat, center.lng);
+        document.getElementById('spot_name').focus();
+    }
+
+    // JSON出力の更新
+    function updateJSON() {
+        const obj = {
+            id: document.getElementById('spot_id').value,
+            name: document.getElementById('spot_name').value,
+            group: document.getElementById('spot_group').value,
+            genre: document.getElementById('spot_genre').value,
+            lat: parseFloat(document.getElementById('spot_lat').value) || 0,
+            lng: parseFloat(document.getElementById('spot_lng').value) || 0
+        };
+        document.getElementById('json-output').innerText = JSON.stringify(obj, null, 2) + ",";
+    }
+
+    // クリップボードにコピー
+    function copyJson() {
+        const text = document.getElementById('json-output').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("コピーしました！\nmaizuru_spots.js の配列内に貼り付けてください。");
+        });
+    }
+
+    // 初期化
+    startNewSpot();
+
+</script>
+</body>
+</html>
