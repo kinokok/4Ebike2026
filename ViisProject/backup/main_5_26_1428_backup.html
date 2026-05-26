@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>舞鶴市 E-BikeProject</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 10px; font-family: sans-serif; background-color: #f5f5f5; }
+        h1 { font-size: 20px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; }
+        #map { width: 100%; height: 50vh; margin-top: 10px; border: 1px solid #ccc; }
+
+        /* 言語切り替え */
+        #lang-btn { font-size: 12px; padding: 4px 10px; cursor: pointer; border: 1px solid #2196F3; border-radius: 4px; background: #fff; color: #2196F3; }
+        #lang-btn:hover { background: #E3F2FD; }
+
+        /* タブ */
+        .tab-container { background: #fff; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+        .tab-buttons { display: flex; background: #eee; border-bottom: 1px solid #ccc; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .tab-btn.active { background: #fff; color: #2196F3; border-bottom: 2px solid #2196F3; }
+        .tab-content { display: none; padding: 12px; }
+        .tab-content.active { display: block; }
+
+        /* フォーム */
+        select, input[type="text"] { padding: 6px; font-size: 14px; margin-right: 5px; margin-bottom: 5px; }
+        button.action-btn { padding: 6px 12px; cursor: pointer; background: #2196F3; color: #fff; border: none; border-radius: 3px; font-size: 13px; }
+        button.clear-btn { padding: 6px 12px; cursor: pointer; background: #757575; color: #fff; border: none; border-radius: 3px; font-size: 13px; }
+
+        /* ルートリスト */
+        .route-item { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+        .route-item h4 { margin: 0 0 5px 0; font-size: 15px; }
+        .route-meta { font-size: 12px; color: #666; margin-bottom: 5px; }
+
+        /* ルートジェネレーター */
+        .gen-section { margin-bottom: 12px; }
+        .gen-section label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-bottom: 4px; }
+        .pad-wrap { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+        .pad-area { width: 100%; height: 180px; position: relative; cursor: crosshair; border: 1px solid #bbb; border-radius: 4px; background: #fff; overflow: hidden; user-select: none; }
+        .pad-axis-h { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #ddd; }
+        .pad-axis-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #ddd; }
+        .pad-ax { position: absolute; font-size: 10px; color: #aaa; }
+        .pad-dot { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #2196F3; border: 3px solid #1565C0; transform: translate(-50%, -50%); cursor: grab; transition: box-shadow 0.1s; }
+        .pad-dot:active { cursor: grabbing; box-shadow: 0 0 0 6px rgba(33,150,243,0.2); }
+        .quad-hint { position: absolute; font-size: 9px; color: #bbb; pointer-events: none; }
+        .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .slider-box { background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 8px; }
+        .slider-box label { font-size: 11px; color: #666; display: block; margin-bottom: 4px; }
+        .slider-box input[type=range] { width: 100%; }
+        .slider-val { font-size: 13px; font-weight: bold; color: #333; text-align: right; }
+        .gen-btn { width: 100%; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; background: #2196F3; color: #fff; border: none; border-radius: 4px; margin-bottom: 10px; }
+        .gen-result { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+        .gen-result h4 { margin: 0 0 4px 0; font-size: 14px; color: #222; }
+        .gen-meta { font-size: 12px; color: #666; margin-bottom: 6px; }
+        .spot-chips { margin-bottom: 8px; }
+        .chip { display: inline-block; background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 12px; padding: 2px 8px; font-size: 11px; margin: 2px; color: #1565C0; }
+        .maps-link { display: inline-block; background: #4CAF50; color: #fff; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .maps-link:hover { background: #388E3C; }
+        .regen-btn { margin-left: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; background: #fff; border: 1px solid #2196F3; color: #2196F3; border-radius: 4px; }
+
+        #status { margin-top: 8px; font-size: 13px; font-weight: bold; }
+
+        /* 現在地ボタン */
+        #map-wrap { position: relative; }
+        #locate-btn {
+            position: absolute;
+            bottom: 80px;
+            right: 10px;
+            z-index: 1000;
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            width: 34px;
+            height: 34px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+        }
+        #locate-btn:hover { background: #f0f0f0; }
+        #locate-btn.tracking { border-color: #2196F3; color: #2196F3; }
+    </style>
+</head>
+<body>
+
+<h1>
+    <span id="t-title">🚲 舞鶴市 E-BikeProject</span>
+    <button id="lang-btn" onclick="toggleLang()">English</button>
+</h1>
+
+<div class="tab-container">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('tab-search', this)" id="tb-search">📍 <span id="t-tab1">スポットを探す</span></button>
+        <button class="tab-btn" onclick="switchTab('tab-routes', this)" id="tb-routes">🚲 <span id="t-tab2">おすすめルート</span></button>
+        <button class="tab-btn" onclick="switchTab('tab-gen', this)" id="tb-gen">🎯 <span id="t-tab3">ルート生成</span></button>
+    </div>
+
+    <!-- タブ1: スポット検索 -->
+    <div id="tab-search" class="tab-content active">
+        <select id="searchGroup">
+            <option value="all" data-ja="すべてのスポット" data-en="All Spots">すべてのスポット</option>
+            <optgroup label="飲食店（青ピン）/ Restaurants (Blue)">
+                <option value="meal" data-ja="お食事" data-en="Dining">お食事</option>
+                <option value="alcohol_meat" data-ja="お酒・肉" data-en="Drinks & Meat">お酒・肉</option>
+                <option value="cafe_sweets" data-ja="カフェ" data-en="Cafe">カフェ</option>
+            </optgroup>
+            <optgroup label="観光・レジャー（赤ピン）/ Sightseeing (Red)">
+                <option value="sightseeing" data-ja="観光・史跡" data-en="Sightseeing">観光・史跡</option>
+                <option value="activity" data-ja="アクティビティ" data-en="Activity">アクティビティ</option>
+            </optgroup>
+        </select>
+        <input type="text" id="searchKeyword" placeholder="名称で絞り込み / Search name">
+        <button class="action-btn" onclick="searchFromLocalDB()" id="t-search-btn">この範囲で検索</button>
+        <button class="clear-btn" onclick="clearMap()" id="t-clear-btn">クリア</button>
+    </div>
+
+    <!-- タブ2: おすすめルート -->
+    <div id="tab-routes" class="tab-content">
+        <div id="route-list"><span id="t-loading">データを読み込んでいます...</span></div>
+    </div>
+
+    <!-- タブ3: ルート生成 -->
+    <div id="tab-gen" class="tab-content">
+        <div class="gen-section">
+            <label id="t-pad-label">好みのエリアをドラッグ / Drag to your preference</label>
+            <div class="pad-wrap">
+                <div class="pad-area" id="pad">
+                    <div class="pad-axis-h"></div>
+                    <div class="pad-axis-v"></div>
+                    <span class="pad-ax" style="top:2px;left:50%;transform:translateX(-50%)">屋内 Indoor</span>
+                    <span class="pad-ax" style="bottom:2px;left:50%;transform:translateX(-50%)">屋外 Outdoor</span>
+                    <span class="pad-ax" style="left:2px;top:50%;transform:translateY(-50%)">落ち着き</span>
+                    <span class="pad-ax" style="right:2px;top:50%;transform:translateY(-50%)">楽しさ Fun</span>
+                    <span class="quad-hint" style="top:6px;left:6px">博物館・カフェ</span>
+                    <span class="quad-hint" style="top:6px;right:6px">居酒屋・体験</span>
+                    <span class="quad-hint" style="bottom:6px;left:6px">公園・神社</span>
+                    <span class="quad-hint" style="bottom:6px;right:6px">展望台・海</span>
+                    <div class="pad-dot" id="pad-dot"></div>
+                </div>
+            </div>
+        </div>
+        <div class="sliders">
+            <div class="slider-box">
+                <label id="t-dist-label">距離 / Distance</label>
+                <input type="range" id="dist-slider" min="2" max="20" value="8" step="1" oninput="document.getElementById('dist-val').textContent=this.value">
+                <div class="slider-val"><span id="dist-val">8</span> km</div>
+            </div>
+            <div class="slider-box">
+                <label id="t-spots-label">立ち寄り数 / Stops</label>
+                <input type="range" id="spots-slider" min="2" max="6" value="3" step="1" oninput="document.getElementById('spots-val').textContent=this.value">
+                <div class="slider-val"><span id="spots-val">3</span> <span id="t-stops-unit">箇所</span></div>
+            </div>
+        </div>
+        <button class="gen-btn" onclick="generateRoute()" id="t-gen-btn">ルートを生成する / Generate Route</button>
+        <div id="gen-result" style="display:none" class="gen-result"></div>
+    </div>
+</div>
+
+<div id="status">システム準備中... / Loading...</div>
+<div id="map-wrap">
+    <div id="map"></div>
+    <button id="locate-btn" title="現在地に移動">📍</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+<script src="maizuru_spots.js"></script>
+<script src="routes.js"></script>
+
+<script>
+// ===== 言語管理 =====
+let lang = 'ja';
+function toggleLang() {
+    lang = lang === 'ja' ? 'en' : 'ja';
+    document.getElementById('lang-btn').textContent = lang === 'ja' ? 'English' : '日本語';
+    applyLang();
+}
+function t(ja, en) { return lang === 'ja' ? ja : en; }
+function applyLang() {
+    document.getElementById('t-title').textContent = t('🚲 舞鶴市 E-BikeProject', '🚲 Maizuru City E-Bike Project');
+    document.getElementById('t-tab1').textContent = t('スポットを探す', 'Find Spots');
+    document.getElementById('t-tab2').textContent = t('おすすめルート', 'Routes');
+    document.getElementById('t-tab3').textContent = t('ルート生成', 'Route Generator');
+    document.getElementById('t-search-btn').textContent = t('この範囲で検索', 'Search this area');
+    document.getElementById('t-clear-btn').textContent = t('クリア', 'Clear');
+    document.getElementById('t-dist-label').textContent = t('距離 / Distance', 'Distance');
+    document.getElementById('t-spots-label').textContent = t('立ち寄り数 / Stops', 'Number of stops');
+    document.getElementById('t-stops-unit').textContent = t('箇所', 'stops');
+    document.getElementById('t-gen-btn').textContent = t('ルートを生成する', 'Generate Route');
+    document.getElementById('searchKeyword').placeholder = t('名称で絞り込み', 'Search by name');
+    renderRouteList();
+}
+
+// ===== DB・地図初期化 =====
+const db = new Dexie("MaizuruTotalSpotsDB");
+db.version(5).stores({ spots: "id, name, group, genre, lat, lng, image, memo, memo_en" });
+
+const blueIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+    iconSize: [25,41], iconAnchor: [12,41], popupAnchor: [1,-34]
+});
+const redIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+    iconSize: [25,41], iconAnchor: [12,41], popupAnchor: [1,-34]
+});
+
+const map = L.map('map').setView([35.4751, 135.3338], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+let markerGroup = L.featureGroup().addTo(map);
+let routePolyline = null;
+let routesData = [];
+
+window.addEventListener('load', async () => {
+    const statusEl = document.getElementById('status');
+    try {
+        if (typeof maizuruSpotsData === 'undefined' || typeof maizuruRoutesData === 'undefined') {
+            throw new Error(t("データファイルが読み込めません", "Data files could not be loaded"));
+        }
+        await db.spots.bulkPut(maizuruSpotsData);
+        routesData = maizuruRoutesData;
+        renderRouteList();
+        const cnt = await db.spots.count();
+        statusEl.innerHTML = t(
+            `✅ 準備完了（スポット ${cnt}件 / ルート ${routesData.length}件）`,
+            `✅ Ready (${cnt} spots / ${routesData.length} routes)`
+        );
+        statusEl.style.color = 'green';
+    } catch(e) {
+        statusEl.innerHTML = `❌ ${e.message}`;
+        statusEl.style.color = 'red';
+    }
+});
+
+function getIconForSpot(spot) {
+    return (spot.group === 'sightseeing' || spot.group === 'activity') ? redIcon : blueIcon;
+}
+
+// ===== タブ =====
+function switchTab(tabId, btn) {
+    clearMap();
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('status').innerHTML = t('準備完了', 'Ready');
+}
+
+// ===== スポット検索 =====
+async function searchFromLocalDB() {
+    clearMap();
+    const group = document.getElementById('searchGroup').value;
+    const keyword = document.getElementById('searchKeyword').value.trim();
+    const bounds = map.getBounds();
+    let all = await (group === 'all' ? db.spots.toArray() : db.spots.where('group').equals(group).toArray());
+    let results = all.filter(s => {
+        if (!s.lat || !s.lng) return false;
+        const inScreen = bounds.contains(L.latLng(s.lat, s.lng));
+        const matchWord = keyword === '' || s.name.includes(keyword) || (s.name_en && s.name_en.toLowerCase().includes(keyword.toLowerCase()));
+        return inScreen && matchWord;
+    });
+    results.forEach(spot => {
+        const nameDisplay = lang === 'en' && spot.name_en ? spot.name_en : spot.name;
+        
+        // メモの言語判定と一意のID生成
+        const currentMemo = lang === 'en' && spot.memo_en ? spot.memo_en : spot.memo;
+        const popupId = `memo-${spot.id}`;
+
+        const popup = `<div style="text-align:center;width:180px">
+            <b style="font-size:14px">${nameDisplay}</b><br>
+            ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            
+            ${currentMemo ? `
+                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
+                        style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
+                    ${t('📖 説明を見る', '📖 View Info')}
+                </button>
+                <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
+                    ${currentMemo}
+                </p>
+            ` : ''}
+            
+            <div style="font-size:11px;color:#666;margin-top:8px">${spot.genre}</div>
+        </div>`;
+        L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popup).addTo(markerGroup);
+    });
+    document.getElementById('status').innerHTML = t(`✅ ${results.length}件表示`, `✅ ${results.length} spots found`);
+}
+
+// ===== おすすめルート =====
+function renderRouteList() {
+    const listEl = document.getElementById('route-list');
+    if (!routesData.length) { listEl.innerHTML = t('データを読み込んでいます...', 'Loading...'); return; }
+    listEl.innerHTML = '';
+    routesData.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'route-item';
+        item.innerHTML = `
+            <h4>${r.title}</h4>
+            <div class="route-meta">${t('距離','Distance')}: ${r.distance_km}km / ${t('目安','Est.')}: ${r.time_min}${t('分','min')} / ${t('難易度','Level')}: ${r.difficulty}</div>
+            <div style="font-size:12px;margin-bottom:8px">${r.description}</div>
+            <button class="action-btn" onclick="drawRoute('${r.route_id}')">${t('地図にルートを表示','Show on Map')}</button>
+        `;
+        listEl.appendChild(item);
+    });
+}
+
+async function drawRoute(routeId) {
+    clearMap();
+    const route = routesData.find(r => r.route_id === routeId);
+    if (!route) return;
+    const latlngs = [], waypoints = [];
+    for (let i = 0; i < route.waypoints.length; i++) {
+        const spot = await db.spots.get(route.waypoints[i]);
+        if (!spot) continue;
+        latlngs.push([spot.lat, spot.lng]);
+        waypoints.push(`${spot.lat},${spot.lng}`);
+        const nameDisplay = lang === 'en' && spot.name_en ? spot.name_en : spot.name;
+        
+        // メモの言語判定とルート用の一意のID生成
+        const currentMemo = lang === 'en' && spot.memo_en ? spot.memo_en : spot.memo;
+        const popupId = `route-memo-${spot.id}-${i}`;
+
+        const popup = `<div style="text-align:center;width:180px">
+            <b>${i+1}. ${nameDisplay}</b><br>
+            ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            
+            ${currentMemo ? `
+                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
+                        style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
+                    ${t('📖 説明を見る', '📖 View Info')}
+                </button>
+                <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
+                    ${currentMemo}
+                </p>
+            ` : ''}
+            
+            <div style="font-size:11px;color:#666;margin-top:8px">${spot.genre}</div>
+        </div>`;
+        L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popup).addTo(markerGroup);
+    }
+    if (!latlngs.length) return;
+    routePolyline = L.polyline(latlngs, { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
+    map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
+    const wp = [...waypoints];
+    const origin = wp.shift(), dest = wp.pop() || origin, wpStr = wp.join('|');
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`;
+    if (wpStr) url += `&waypoints=${wpStr}`;
+    document.getElementById('status').innerHTML = `
+        ✅ ${route.title}
+        <a href="${url}" target="_blank" style="background:#4CAF50;color:white;padding:4px 8px;text-decoration:none;border-radius:3px;margin-left:10px">
+            ${t('スマホでナビ開始','Navigate')}
+        </a>`;
+}
+
+// ===== クリア =====
+function clearMap() {
+    markerGroup.clearLayers();
+    if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
+    document.getElementById('status').innerHTML = '';
+}
+
+// ===== ルートジェネレーター: パッド =====
+let padX = 0, padY = 0, isDragging = false;
+const padEl = document.getElementById('pad');
+const dotEl = document.getElementById('pad-dot');
+
+function updateDot(x, y) {
+    const r = padEl.getBoundingClientRect();
+    const px = Math.max(0, Math.min(r.width, x));
+    const py = Math.max(0, Math.min(r.height, y));
+    padX = (px / r.width) * 2 - 1;   // fun: -1(calm) to +1(fun)
+    padY = -((py / r.height) * 2 - 1); // indoor: -1(outdoor) to +1(indoor)
+    dotEl.style.left = px + 'px';
+    dotEl.style.top = py + 'px';
+}
+padEl.addEventListener('mousedown', e => {
+    isDragging = true;
+    const r = padEl.getBoundingClientRect();
+    updateDot(e.clientX - r.left, e.clientY - r.top);
+});
+document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const r = padEl.getBoundingClientRect();
+    updateDot(e.clientX - r.left, e.clientY - r.top);
+});
+document.addEventListener('mouseup', () => isDragging = false);
+padEl.addEventListener('touchstart', e => {
+    isDragging = true;
+    const r = padEl.getBoundingClientRect();
+    const t = e.touches[0];
+    updateDot(t.clientX - r.left, t.clientY - r.top);
+    e.preventDefault();
+}, { passive: false });
+document.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const r = padEl.getBoundingClientRect();
+    const t = e.touches[0];
+    updateDot(t.clientX - r.left, t.clientY - r.top);
+    e.preventDefault();
+}, { passive: false });
+document.addEventListener('touchend', () => isDragging = false);
+
+// 初期位置: 中央
+window.addEventListener('load', () => {
+    updateDot(padEl.offsetWidth / 2, padEl.offsetHeight / 2);
+});
+
+// ===== ルートジェネレーター: 生成 =====
+function haversine(a, b) {
+    const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180;
+    const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180) * Math.cos(b.lat*Math.PI/180) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
+}
+function spotScore(spot) {
+    const di = (spot.indoor || 0) - padY;
+    const df = (spot.fun || 0) - padX;
+    let score = Math.sqrt(di*di + df*df);
+    if (locationMarker) {
+        const loc = locationMarker.getLatLng();
+        const d = haversine({ lat: loc.lat, lng: loc.lng }, spot);
+        score += d * 0.05;
+    }
+    return score;
+}
+
+function sortByNearest(spots) {
+    const start = locationMarker
+        ? { lat: locationMarker.getLatLng().lat, lng: locationMarker.getLatLng().lng }
+        : spots[0];
+    const result = [], remaining = [...spots];
+    let current = start;
+    while (remaining.length) {
+        let minD = Infinity, minI = 0;
+        remaining.forEach((s, i) => {
+            const d = haversine(current, s);
+            if (d < minD) { minD = d; minI = i; }
+        });
+        result.push(remaining.splice(minI, 1)[0]);
+        current = result[result.length - 1];
+    }
+    return result;
+}
+
+async function generateRoute() {
+    const nStops = parseInt(document.getElementById('spots-slider').value);
+    const maxDist = parseFloat(document.getElementById('dist-slider').value);
+    const resultEl = document.getElementById('gen-result');
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = t('計算中...', 'Calculating...');
+
+    const allSpots = await db.spots.toArray();
+
+    // 好みスコアでソート
+    const sorted = [...allSpots]
+        .filter(s => s.lat && s.lng)
+        .sort((a, b) => spotScore(a) - spotScore(b));
+
+    // groupごとに上位2件ずつ候補に入れる
+    const groupCount = {};
+    const candidates = [];
+    for (const spot of sorted) {
+        const c = groupCount[spot.group] || 0;
+        if (c >= 2) continue;
+        candidates.push(spot);
+        groupCount[spot.group] = c + 1;
+        if (candidates.length >= nStops * 3) break;
+    }
+
+    // 候補が足りなければ制限なしで補充
+    if (candidates.length < nStops) {
+        for (const spot of sorted) {
+            if (!candidates.includes(spot)) candidates.push(spot);
+            if (candidates.length >= nStops * 3) break;
+        }
+    }
+
+    // 先頭からnStops件選んで距離順に並べる
+    const best = sortByNearest(candidates.slice(0, nStops));
+
+    let totalDist = 0;
+    for (let i = 1; i < best.length; i++) totalDist += haversine(best[i-1], best[i]);
+    const timeMin = Math.round(totalDist / 12 * 60 + best.length * 15);
+
+    const themeLabel = (() => {
+        if (padY > 0.3 && padX < -0.3) return t('落ち着いた屋内コース', 'Calm Indoor Course');
+        if (padY > 0.3 && padX > 0.3) return t('賑やか屋内コース', 'Lively Indoor Course');
+        if (padY < -0.3 && padX < -0.3) return t('のんびり自然コース', 'Relaxed Nature Course');
+        if (padY < -0.3 && padX > 0.3) return t('アクティブ屋外コース', 'Active Outdoor Course');
+        return t('バランス型コース', 'Balanced Course');
+    })();
+
+    const wpCoords = best.map(s => `${s.lat},${s.lng}`);
+    const origin = wpCoords[0];
+    const dest = wpCoords[wpCoords.length - 1];
+    const midWp = wpCoords.slice(1, -1).join('|');
+    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`;
+    if (midWp) mapsUrl += `&waypoints=${midWp}`;
+
+    const chips = best.map((s, i) => {
+        const name = lang === 'en' && s.name_en ? s.name_en : s.name;
+        return `<span class="chip">${i+1}. ${name}</span>`;
+    }).join('');
+
+    resultEl.innerHTML = `
+        <h4>${themeLabel}</h4>
+        <div class="gen-meta">${t('約','~')} ${totalDist.toFixed(1)} km / ${t('目安','Est.')} ${timeMin} ${t('分','min')} / ${best.length} ${t('スポット','stops')}</div>
+        <div class="spot-chips">${chips}</div>
+        <a class="maps-link" href="${mapsUrl}" target="_blank">${t('Google マップでナビ開始','Navigate with Google Maps')}</a>
+        <button class="regen-btn" onclick="generateRoute()">${t('別のルートを生成','Try again')}</button>
+    `;
+
+    clearMap();
+    const latlngs = best.map(s => [s.lat, s.lng]);
+    best.forEach((s, i) => {
+        const name = lang === 'en' && s.name_en ? s.name_en : s.name;
+        const currentMemo = lang === 'en' && s.memo_en ? s.memo_en : s.memo;
+        const popupId = `gen-memo-${s.id}-${i}`;
+        const popup = `<div style="text-align:center;width:180px">
+            <b>${i+1}. ${name}</b><br>
+            ${s.image ? `<img src="${s.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            ${currentMemo ? `
+                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';"
+                        style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">
+                    ${t('📖 説明を見る', '📖 View Info')}
+                </button>
+                <p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3">
+                    ${currentMemo}
+                </p>
+            ` : ''}
+            <div style="font-size:11px;color:#666;margin-top:8px"><small>${s.genre}</small></div>
+        </div>`;
+        L.marker([s.lat, s.lng], { icon: getIconForSpot(s) }).bindPopup(popup).addTo(markerGroup);
+    });
+    routePolyline = L.polyline(latlngs, { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
+    map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
+}
+// ===== 現在地追跡 =====
+let locationWatchId = null;
+let locationMarker = null;
+let locationCircle = null;
+const locateBtn = document.getElementById('locate-btn');
+
+const locationIcon = L.divIcon({
+    className: '',
+    html: '<div style="width:16px;height:16px;background:#2196F3;border:3px solid #fff;border-radius:50%;box-shadow:0 0 6px rgba(33,150,243,0.8);"></div>',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8]
+});
+
+function updateLocationOnMap(pos) {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const accuracy = pos.coords.accuracy;
+    if (!locationMarker) {
+        locationMarker = L.marker([lat, lng], { icon: locationIcon, zIndexOffset: 1000 })
+            .addTo(map).bindPopup(t('現在地', 'Your Location'));
+        locationCircle = L.circle([lat, lng], { radius: accuracy, color: '#2196F3', fillColor: '#2196F3', fillOpacity: 0.1, weight: 1 }).addTo(map);
+        map.setView([lat, lng], 14);
+    } else {
+        locationMarker.setLatLng([lat, lng]);
+        locationCircle.setLatLng([lat, lng]).setRadius(accuracy);
+    }
+}
+
+function startLocationTracking() {
+    if (!navigator.geolocation) { alert(t('位置情報非対応のブラウザです', 'Geolocation not supported')); return; }
+    navigator.geolocation.getCurrentPosition(pos => {
+        updateLocationOnMap(pos);
+        locationWatchId = navigator.geolocation.watchPosition(updateLocationOnMap, err => console.warn(err.message), {
+            enableHighAccuracy: true, maximumAge: 5000, timeout: 10000
+        });
+        locateBtn.classList.add('tracking');
+        locateBtn.title = t('現在地を追跡中', 'Tracking location');
+    }, err => console.warn(err.message), { enableHighAccuracy: true });
+}
+
+locateBtn.addEventListener('click', () => {
+    if (locationMarker) { map.setView(locationMarker.getLatLng(), 15); }
+    else { startLocationTracking(); }
+});
+
+window.addEventListener('load', () => { startLocationTracking(); });
+</script>
+</body>
+</html>
