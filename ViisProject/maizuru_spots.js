@@ -175,7 +175,9 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4742032,
-    "lng": 135.3851132
+    "lng": 135.3851132,
+    "image" : "https://yonezawakoji.com/wp-content/uploads/2020/12/%E8%88%9E%E9%B6%B4-1024x722.jpg",
+    "memo" : "#MAIZURU オブジェは、舞鶴市に位置する観光スポットで、舞鶴の魅力を象徴するオブジェが設置されている場所です。訪れる人々は、このオブジェを背景に写真を撮ることができ、舞鶴の観光名所として人気があります。"
   },
   {
     "id": "node_12952852345",
@@ -183,7 +185,9 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4729011,
-    "lng": 135.3868631
+    "lng": 135.3868631,
+    "image" : "https://travel-lounge.jp/wp-content/uploads/2023/04/%E9%9D%92%E6%98%A518%E3%81%8D%E3%81%A3%E3%81%B7%E8%88%9E%E9%B6%B4%E6%97%85_komugi15.jpg",
+    "memo" : "東門(北吸)駅跡駅名標は、舞鶴市に位置する歴史的なスポットで、かつて存在した東門(北吸)駅の跡地に設置された駅名標です。訪れる人々は、この駅名標を通じて、かつての鉄道の歴史や舞鶴の交通の発展を感じることができます。"
   },
 
   {
@@ -192,7 +196,9 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "史跡",
     "lat": 35.4747601,
-    "lng": 135.3837523
+    "lng": 135.3837523,
+    "image" : "https://www.city.maizuru.kyoto.jp/kyouiku/cmsfiles/contents/0000009/9145/NT6_9006_2021102111542044.jpg",
+    "memo" : "舞鶴海軍鎮守府跡は、舞鶴市に位置する歴史的なスポットで、かつて存在した舞鶴海軍鎮守府の跡地です。訪れる人々は、この跡地を通じて、かつての海軍の歴史や舞鶴の国防の重要性を感じることができます。"
   },
   {
     "id": "node_13011586124",
