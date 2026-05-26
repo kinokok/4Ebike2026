@@ -389,7 +389,7 @@ const maizuruSpotsData = [
     "genre": "公園",
     "lat": 35.4536838,
     "lng": 135.3909737,
-    "image": "https://tse1.mm.bing.net/th/id/OIP.9n7s8Xo2l3a5h0mLh6j8wHaFj?r=0&w=1920&h=1430&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "image": "https://www.city.maizuru.kyoto.jp/kurashi/cmsfiles/contents/0000009/9012/2025_higashimaizuru1.JPG",
     "memo" : "東舞鶴公園は山林を開いて造られた丘の頂上に上ると、東舞鶴市街の向こうに舞鶴東港や舞鶴湾を遠望することができます。また、広々とした園内には、市の花であるツツジが約2万5000本も植栽されており、毎年5月上旬にはピンクや白の花が咲き乱れます。"
   },
   {
