@@ -448,7 +448,9 @@ const maizuruSpotsData = [
     "group": "meal",
     "genre": "イタリアン・フレンチ",
     "lat": 35.4681268277,
-    "lng": 135.3956565076
+    "lng": 135.3956565076,
+    "image": "https://imgfp.hotp.jp/IMGH/47/81/P022014781/P022014781_368.jpg",
+    "memo" : "舞鶴市に位置する高級感あふれるカフェ。店内は落ち着いた空間で舞鶴観光のスタートにぴったりのスポット"
   },
   {
     "id": "J000706681",
@@ -520,7 +522,9 @@ const maizuruSpotsData = [
     "group": "alcohol_meat",
     "genre": "焼肉",
     "lat": 35.4693988882,
-    "lng": 135.3949901329
+    "lng": 135.3949901329,
+    "image": "https://pu-3.com/manpuku/wp-content/uploads/2020/11/IMG_3612-640x480.jpg",
+    "memo": "舞鶴の焼肉と言ったらここ！宴会、個人での利用もおすすめで、旅行先で食べるちょっといいお肉が絶品！"
   },
   {
     "id": "J001190971",
@@ -704,7 +708,9 @@ const maizuruSpotsData = [
   "group": "sightseeing",
   "genre": "史跡",
   "lat": 35.4686187,
-  "lng": 135.3948208
+  "lng": 135.3948208,
+  "image": "https://th.bing.com/th/id/R.9af19046cce6743c47c9afa5648ffd9f?rik=kAI0RoU9c7S6dg&riu=http%3a%2f%2fwww.retro-station.jp%2f31_zuiroku_jr%2fhigashi_maizuru.jpg&ehk=%2bLYtV%2b7kqjM9yKx2M0azelbwRjxA47niE0%2fbODcBVnI%3d&risl=&pid=ImgRaw&r=0",
+  "memo" : "舞鶴に手軽にアクセスが可能な駅で、京都からの特急が通っていることが特徴。駅周辺には飲食店や、バス停があるため観光会誌の拠点として便利なスポット"
   },
   {
   "id": "node_1779165695016",
