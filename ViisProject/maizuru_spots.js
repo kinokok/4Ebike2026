@@ -398,7 +398,9 @@ const maizuruSpotsData = [
     "group": "activity",
     "genre": "公園",
     "lat": 35.4502709,
-    "lng": 135.3121112
+    "lng": 135.3121112,
+    "image": "https://www.pref.kyoto.jp/kowanji/images/1202979854700.jpg",
+    "memo" : "下福井緑地は、舞鶴市に位置する自然豊かな公園で、散歩やリラックスするのに最適なスポットです。園内には多くの木々が植栽されており、四季折々の美しい景色を楽しむことができます。"
   },
   {
     "id": "way_1026963916",
@@ -406,7 +408,9 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "博物館・美術館",
     "lat": 35.5134821,
-    "lng": 135.3440044
+    "lng": 135.3440044,
+    "image": "https://th.bing.com/th/id/R.c39643881cfa4e7c129dc45bac1c9abf?rik=mp06NCwsOzU0Vg&riu=http%3a%2f%2fwww.31stsquad.com%2fHomePagePhoto%2fmz19a22.jpg&ehk=%2bv0Fb1ETsQDSbpMN1%2bbUzIUWvzRuLitISrFvERo8UBY%3d&risl=&pid=ImgRaw&r=0",
+    "memo" : "エル・マール まいづるは、舞鶴市に位置する博物館で、海洋文化や歴史に関する展示が行われています。特に、舞鶴の港や海に関連する資料や模型が豊富に展示されており、訪れる人々に海の魅力を伝えるスポットです。"
   },
   {
     "id": "way_1136209647",
