@@ -217,7 +217,7 @@ const maizuruSpotsData = [
     "genre": "博物館・美術館",
     "lat": 35.4760929,
     "lng": 135.3874742,
-    "image ":"https://akarenga-park.com/wp-content/themes/akarenga-park/common/img/facility/f1/f1_1.jpeg",
+    "image ":"https://tse3.mm.bing.net/th/id/OIP.e3UnFjSE-hdVoYhR0LO0rgAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
     "memo" : "赤れんがの歴史を深く知ることのできる博物館で、赤れんがの建築技術やその過去を知ることができる"
   },
   {
@@ -648,7 +648,9 @@ const maizuruSpotsData = [
     "group": "other",
     "genre": "お好み焼き・もんじゃ",
     "lat": 35.4728076278,
-    "lng": 135.3934729249
+    "lng": 135.3934729249,
+    "image": "https://tblg.k-img.com/restaurant/images/Rvw/323708/640x640_rect_b7d0c439f7d9daf637c1dd99efb9d16b.jpg",
+    "memo" : "舞鶴市に位置するお好み焼きと鉄板焼きの専門店で、地元の食材を使用したメニューが特徴的なスポット"
   },
   {
     "id": "J003715376",
