@@ -217,7 +217,7 @@ const maizuruSpotsData = [
     "genre": "博物館・美術館",
     "lat": 35.4760929,
     "lng": 135.3874742,
-    "image ":"https://tse3.mm.bing.net/th/id/OIP.e3UnFjSE-hdVoYhR0LO0rgAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "image ":"https://maizuru-kanko.net/wp/wp-content/uploads/2023/01/20230307%E8%B5%A4%E3%82%8C%E3%82%93%E3%81%8C%E5%8D%9A%E7%89%A9%E9%A4%A8-1024x768.jpg",
     "memo" : "赤れんがの歴史を深く知ることのできる博物館で、赤れんがの建築技術やその過去を知ることができる"
   },
   {
