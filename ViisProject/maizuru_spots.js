@@ -356,7 +356,9 @@ const maizuruSpotsData = [
     "group": "activity",
     "genre": "公園",
     "lat": 35.47857,
-    "lng": 135.3914601
+    "lng": 135.3914601,
+    "image": "https://www.kouen-asobou.com/img/68603/68603-0.jpg",
+    "memo" : "前島みなと公園は、舞鶴市に位置する公園で、海に面しており、広々とした芝生や遊具があり、家族連れやカップルに人気のスポットです。特に夕方には、美しい夕日を眺めることができるため、ロマンチックな雰囲気が漂います。また、バーベキューエリアもあり、友人や家族と一緒に楽しむことができます。"
   },
   {
     "id": "way_736433437",
@@ -666,7 +668,9 @@ const maizuruSpotsData = [
     "group": "meal",
     "genre": "洋食",
     "lat": 35.4761590278,
-    "lng": 135.3984701419
+    "lng": 135.3984701419,
+    "image" : "https://th.bing.com/th/id/OIP.Mt_uePQVusndQmByTkut5QHaFj?r=0&o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "memo" : "舞鶴市に位置する洋食店で、特にハンバーグが人気のメニューとなっているスポット"
   },
   {
     "id": "J003916214",
