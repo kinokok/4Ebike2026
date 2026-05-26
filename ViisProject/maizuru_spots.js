@@ -216,7 +216,9 @@ const maizuruSpotsData = [
     "group": "sightseeing",
     "genre": "博物館・美術館",
     "lat": 35.4760929,
-    "lng": 135.3874742
+    "lng": 135.3874742,
+    "image ": "https://tse1.mm.bing.net/th/id/OIP.t5VKrW1OlEuiNhka_NPMewHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "memo" : "赤れんがの歴史を深く知ることのできる博物館で、赤れんがの建築技術やその過去を知ることができる"
   },
   {
     "id": "way_43881286",
@@ -240,7 +242,9 @@ const maizuruSpotsData = [
     "group": "activity",
     "genre": "公園",
     "lat": 35.4755023,
-    "lng": 135.3840998
+    "lng": 135.3840998,
+    "image": "https://tse3.mm.bing.net/th/id/OIP.xppP_Ba7DlGRfhzNq9s20gHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "memo" : "舞鶴の歴史的建造物である赤れんが倉庫を中心としたエリアで、観光スポットやイベントスペースとして利用されている"
   },
   {
     "id": "way_449027186",
