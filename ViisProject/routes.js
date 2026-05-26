@@ -44,24 +44,5 @@ const maizuruRoutesData = [
     "J003736064",
     "way_563048948"
   ]
-},
-{
-  "route_id": "route_04",
-  "category": "nonbiri",
-  "category_name": "のんびり",
-  "title": "舞鶴王道",
-  "description": "ここにルートの魅力や特徴を入力してください。",
-  "distance_km": 10,
-  "time_min": 60,
-  "difficulty": "★★☆",
-  "waypoints": [
-    "way_559789207",
-    "node_5369881229",
-    "way_736433437",
-    "node_1434345385",
-    "node_12952852348",
-    "way_183842148",
-    "node_12949988475"
-  ]
 }
 ];
