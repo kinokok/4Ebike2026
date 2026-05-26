@@ -368,7 +368,9 @@ const maizuruSpotsData = [
     "group": "activity",
     "genre": "公園",
     "lat": 35.4763958,
-    "lng": 135.3694699
+    "lng": 135.3694699,
+    "image": "https://tse1.mm.bing.net/th/id/OIP.pXDtJMaZwJhiX5X1k-U8wQHaFh?r=0&w=1920&h=1430&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "memo" : "中舞鶴公園は、旧国鉄「中舞鶴駅」の跡地を利用して整備された公園で、昔なつかしい蒸気機関車が展示され子どもたちの人気を集めています"
   },
   {
     "id": "way_736626533",
@@ -376,7 +378,9 @@ const maizuruSpotsData = [
     "group": "activity",
     "genre": "公園",
     "lat": 35.4767709,
-    "lng": 135.3920764
+    "lng": 135.3920764,
+    "image": "https://lh5.googleusercontent.com/p/AF1QipO-lPHkck61zaTsv8RC4YxU-XqOqrXZM8iKchMA=s1600-w800-k-no",
+    "memo" : "しおじプラザは広々とした芝生や遊具があり、家族連れやカップルに人気のスポットです。特に夕方には、美しい夕日を眺めることができるため、ロマンチックな雰囲気が漂います。また、バーベキューエリアもあり、友人や家族と一緒に楽しむことができます。"
   },
   {
     "id": "way_737352522",
@@ -384,7 +388,9 @@ const maizuruSpotsData = [
     "group": "activity",
     "genre": "公園",
     "lat": 35.4536838,
-    "lng": 135.3909737
+    "lng": 135.3909737,
+    "image": "https://tse1.mm.bing.net/th/id/OIP.9n7s8Xo2l3a5h0mLh6j8wHaFj?r=0&w=1920&h=1430&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "memo" : "東舞鶴公園は山林を開いて造られた丘の頂上に上ると、東舞鶴市街の向こうに舞鶴東港や舞鶴湾を遠望することができます。また、広々とした園内には、市の花であるツツジが約2万5000本も植栽されており、毎年5月上旬にはピンクや白の花が咲き乱れます。"
   },
   {
     "id": "way_738124707",
