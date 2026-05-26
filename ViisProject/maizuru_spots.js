@@ -217,7 +217,7 @@ const maizuruSpotsData = [
     "genre": "博物館・美術館",
     "lat": 35.4760929,
     "lng": 135.3874742,
-    "image ": "https://tse1.mm.bing.net/th/id/OIP.t5VKrW1OlEuiNhka_NPMewHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "image ":"https://akarenga-park.com/wp-content/themes/akarenga-park/common/img/facility/f1/f1_1.jpeg",
     "memo" : "赤れんがの歴史を深く知ることのできる博物館で、赤れんがの建築技術やその過去を知ることができる"
   },
   {
