@@ -8,8 +8,31 @@
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; padding: 10px; font-family: sans-serif; background-color: #f5f5f5; }
-        h1 { font-size: 20px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; }
+        h1 { font-size: 18px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
         #map { width: 100%; height: 50vh; margin-top: 10px; border: 1px solid #ccc; }
+
+        /* 天気表示エリア（タイムライン＆グラデーション強化） */
+        .weather-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            background: #fff;
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+        .weather-timeline {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .weather-arrow { font-size: 11px; color: #666; margin: 0 2px; }
+        .weather-info { font-weight: bold; color: #222; font-size: 12px; margin-left: 2px; }
 
         /* 言語切り替え */
         #lang-select { font-size: 12px; padding: 6px 10px; cursor: pointer; border: 1px solid #2196F3; border-radius: 4px; background: #fff; color: #2196F3; }
@@ -99,12 +122,20 @@
 
 <h1>
     <span id="t-title" data-i18n-key="title">🚲 舞鶴市 E-BikeProject</span>
-    <select id="lang-select" onchange="setLang(this.value)">
-        <option value="ja">日本語</option>
-        <option value="en">English</option>
-        <option value="ko">한국어</option>
-        <option value="zh">中文</option>
-    </select>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <!-- 天気表示エリア（タイムライン進化版） -->
+        <div class="weather-wrap" id="weather-box">
+            📍<span id="t-weather-city" style="font-weight: bold;" data-i18n-key="weather_city">舞鶴</span>:
+            <span class="weather-timeline" id="weather-timeline">⏳</span>
+            <span id="weather-text" class="weather-info">--</span>
+        </div>
+        <select id="lang-select" onchange="setLang(this.value)">
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+            <option value="ko">한국어</option>
+            <option value="zh">中文</option>
+        </select>
+    </div>
 </h1>
 
 <div class="tab-container">
@@ -222,7 +253,8 @@ const translations = {
     status_init: { ja:'準備完了', en:'Ready', ko:'준비 완료', zh:'准备就绪' },
     google_maps_nav: { ja:'Google マップでナビ開始', en:'Open Google Maps', ko:'Google 지도에서 내비게이션 시작', zh:'在 Google 地图中导航' },
     route_summary: { ja:'約 {dist} km ／ 目安 {time} 分 ／ {count} スポット', en:'Approx. {dist} km / ~{time} min / {count} spots', ko:'약 {dist} km / 약 {time} 분 / {count} 스팟', zh:'约 {dist} 公里 / 预计 {time} 分钟 / {count} 个景点' },
-    route_added: { ja:'ルートに追加', en:'Add to Route', ko:'경로에 추가', zh:'添加到路线' }
+    route_added: { ja:'ルートに追加', en:'Add to Route', ko:'경로에 추가', zh:'添加到路线' },
+    weather_city: { ja:'舞鶴', en:'Maizuru', ko:'마이즈루', zh:'舞鹤' }
 };
 
 function translate(key, params = {}) {
@@ -282,6 +314,7 @@ function applyLang() {
     renderRouteList();
     renderRoutePlan();
     if (currentRouteId) drawRoute(currentRouteId);
+    updateWeatherDisplay();
 }
 
 function getSpotField(spot, base) {
@@ -294,6 +327,115 @@ function getRouteField(route, base) {
 
 function getGroupLabel(group) {
     return translations[group] ? translate(group) : group || '';
+}
+
+// ===== 天気時系列のビジュアル解析エンジン =====
+let rawWeatherData = null;
+
+function translateWeather(telop) {
+    if (lang === 'ja') return telop;
+    if (lang === 'en') {
+        return telop
+            .replace(/晴/g, 'Clear').replace(/曇/g, 'Cloudy').replace(/雨/g, 'Rain').replace(/雪/g, 'Snow')
+            .replace(/のち|後/g, '➔').replace(/時々/g, '/').replace(/一時/g, ' temporary');
+    }
+    if (lang === 'ko') {
+        return telop
+            .replace(/晴/g, '맑음').replace(/曇/g, '흐림').replace(/雨/g, '비').replace(/雪/g, '눈')
+            .replace(/のち|後/g, '➔').replace(/時々/g, '/때때로').replace(/一時/g, ' 한때');
+    }
+    if (lang === 'zh') {
+        return telop
+            .replace(/晴/g, '晴').replace(/曇/g, '多云').replace(/雨/g, '雨').replace(/雪/g, '雪')
+            .replace(/のち|後/g, '➔').replace(/時々/g, '/有时').replace(/一時/g, ' 短时');
+    }
+    return telop;
+}
+
+// 文字列から適切な絵文字を1つ返す関数
+function getWeatherIcon(text) {
+    if (text.includes('雨')) return '☔';
+    if (text.includes('雪')) return '❄️';
+    if (text.includes('曇')) return '☁️';
+    if (text.includes('晴')) return '☀️';
+    return '🌈';
+}
+
+// 文字列から適切な単色カラーを返す関数
+function getWeatherColor(text) {
+    if (text.includes('雨')) return '#EDE7F6'; // 紫グレー
+    if (text.includes('雪')) return '#ECEFF1'; // 白グレー
+    if (text.includes('曇')) return '#E0E0E0'; // くもりグレー
+    if (text.includes('晴')) return '#E3F2FD'; // 快晴ブルー
+    return '#FFF3E0';
+}
+
+async function fetchMaizuruWeather() {
+    const weatherTextEl = document.getElementById('weather-text');
+    try {
+        const res = await fetch('https://www.jma.go.jp/bosai/forecast/data/forecast/260000.json');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+
+        const timeSeries = data[0].timeSeries[0];
+        const northernAreaIndex = timeSeries.areas.findIndex(area => area.area.code === "260020");
+
+        if (northernAreaIndex !== -1) {
+            // 気象庁の生の全角スペース区切りのテキスト
+            rawWeatherData = timeSeries.areas[northernAreaIndex].weathers[0].replace(/　/g, ' ');
+            updateWeatherDisplay();
+        }
+    } catch (e) {
+        if (weatherTextEl) weatherTextEl.textContent = 'Error';
+    }
+}
+
+function updateWeatherDisplay() {
+    const weatherTextEl = document.getElementById('weather-text');
+    const weatherTimelineEl = document.getElementById('weather-timeline');
+    const weatherBoxEl = document.getElementById('weather-box');
+
+    if (!rawWeatherData || !weatherTextEl) return;
+
+    // 1. テキスト表記の反映（多言語切替）
+    weatherTextEl.textContent = `(${translateWeather(rawWeatherData)})`;
+
+    // 2. タイムライン風のイラスト生成解析
+    let cleanText = rawWeatherData.trim();
+    let htmlTimeline = "";
+
+    if (cleanText.includes('後') || cleanText.includes('のち')) {
+        // 「〇〇 のち ✕✕」のパターン
+        const parts = cleanText.split(/後|のち/);
+        const icon1 = getWeatherIcon(parts[0]);
+        const icon2 = getWeatherIcon(parts[1]);
+        const col1 = getWeatherColor(parts[0]);
+        const col2 = getWeatherColor(parts[1]);
+
+        htmlTimeline = `${icon1} <span class="weather-arrow">➔</span> ${icon2}`;
+        weatherBoxEl.style.background = `linear-gradient(90deg, ${col1} 0%, ${col2} 100%)`;
+        weatherBoxEl.style.borderColor = '#B0BEC5';
+
+    } else if (cleanText.includes('時々') || cleanText.includes('一時')) {
+        // 「〇〇 時々 ✕✕」のパターン
+        const parts = cleanText.split(/時々|一時/);
+        const icon1 = getWeatherIcon(parts[0]);
+        const icon2 = getWeatherIcon(parts[1]);
+        const col = getWeatherColor(parts[0]);
+
+        htmlTimeline = `${icon1}<span style="font-size:11px;margin-left:2px">(${icon2})</span>`;
+        weatherBoxEl.style.background = col;
+        weatherBoxEl.style.borderColor = '#CFD8DC';
+    } else {
+        // 変化なしの単一パターンの場合
+        const icon = getWeatherIcon(cleanText);
+        const col = getWeatherColor(cleanText);
+        htmlTimeline = icon;
+        weatherBoxEl.style.background = col;
+        weatherBoxEl.style.borderColor = '#90CAF9';
+    }
+
+    weatherTimelineEl.innerHTML = htmlTimeline;
 }
 
 // ===== DB・地図初期化 =====
@@ -318,6 +460,7 @@ let currentRouteId = null;
 
 window.addEventListener('load', async () => {
     const statusEl = document.getElementById('status');
+    fetchMaizuruWeather();
     try {
         if (typeof maizuruSpotsData === 'undefined' || typeof maizuruRoutesData === 'undefined') {
             throw new Error(translate('data_error'));
