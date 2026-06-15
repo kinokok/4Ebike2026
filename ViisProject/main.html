@@ -254,7 +254,8 @@ const translations = {
     google_maps_nav: { ja:'Google マップでナビ開始', en:'Open Google Maps', ko:'Google 지도에서 내비게이션 시작', zh:'在 Google 地图中导航' },
     route_summary: { ja:'約 {dist} km ／ 目安 {time} 分 ／ {count} スポット', en:'Approx. {dist} km / ~{time} min / {count} spots', ko:'약 {dist} km / 약 {time} 분 / {count} 스팟', zh:'约 {dist} 公里 / 预计 {time} 分钟 / {count} 个景点' },
     route_added: { ja:'ルートに追加', en:'Add to Route', ko:'경로에 추가', zh:'添加到路线' },
-    weather_city: { ja:'舞鶴', en:'Maizuru', ko:'마이즈루', zh:'舞鹤' }
+    weather_city: { ja:'舞鶴', en:'Maizuru', ko:'마이즈루', zh:'舞鹤' },
+    street_view: { ja:'ストリートビュー', en:'Street View', ko:'스트리트 뷰', zh:'街景' }
 };
 
 function translate(key, params = {}) {
@@ -332,40 +333,56 @@ function getGroupLabel(group) {
 // ===== 天気時系列のビジュアル解析エンジン =====
 let rawWeatherData = null;
 
+// 天気テロップの語句変換テーブル（漢字・ひらがな両対応、時間表現含む）
+const weatherTermsMap = {
+    en: [
+        [/晴れ|晴/g, 'Clear'], [/くもり|曇り|曇/g, 'Cloudy'], [/雨/g, 'Rain'], [/雪/g, 'Snow'],
+        [/雷/g, 'Thunder'],
+        [/のち|後/g, '➔'], [/時々/g, '/'], [/一時/g, ' temporary'],
+        [/朝/g, 'morning'], [/昼前/g, 'before noon'], [/昼過ぎ/g, 'afternoon'], [/夕方/g, 'evening'], [/夜/g, 'night'], [/明け方/g, 'dawn'],
+        [/から/g, ' from '], [/まで/g, ' until '], [/と/g, ' and '],
+    ],
+    ko: [
+        [/晴れ|晴/g, '맑음'], [/くもり|曇り|曇/g, '흐림'], [/雨/g, '비'], [/雪/g, '눈'],
+        [/雷/g, '뇌우'],
+        [/のち|後/g, '➔'], [/時々/g, '/때때로'], [/一時/g, ' 한때'],
+        [/朝/g, '아침'], [/昼前/g, '오전'], [/昼過ぎ/g, '오후'], [/夕方/g, '저녁'], [/夜/g, '밤'], [/明け方/g, '새벽'],
+        [/から/g, ' 부터 '], [/まで/g, ' 까지 '], [/と/g, ' 와 '],
+    ],
+    zh: [
+        [/晴れ|晴/g, '晴'], [/くもり|曇り|曇/g, '多云'], [/雨/g, '雨'], [/雪/g, '雪'],
+        [/雷/g, '雷'],
+        [/のち|後/g, '➔'], [/時々/g, '/有时'], [/一時/g, ' 短时'],
+        [/朝/g, '早上'], [/昼前/g, '上午'], [/昼過ぎ/g, '下午'], [/夕方/g, '傍晚'], [/夜/g, '夜间'], [/明け方/g, '凌晨'],
+        [/から/g, ' 起 '], [/まで/g, ' 至 '], [/と/g, ' 和 '],
+    ]
+};
+
 function translateWeather(telop) {
     if (lang === 'ja') return telop;
-    if (lang === 'en') {
-        return telop
-            .replace(/晴/g, 'Clear').replace(/曇/g, 'Cloudy').replace(/雨/g, 'Rain').replace(/雪/g, 'Snow')
-            .replace(/のち|後/g, '➔').replace(/時々/g, '/').replace(/一時/g, ' temporary');
-    }
-    if (lang === 'ko') {
-        return telop
-            .replace(/晴/g, '맑음').replace(/曇/g, '흐림').replace(/雨/g, '비').replace(/雪/g, '눈')
-            .replace(/のち|後/g, '➔').replace(/時々/g, '/때때로').replace(/一時/g, ' 한때');
-    }
-    if (lang === 'zh') {
-        return telop
-            .replace(/晴/g, '晴').replace(/曇/g, '多云').replace(/雨/g, '雨').replace(/雪/g, '雪')
-            .replace(/のち|後/g, '➔').replace(/時々/g, '/有时').replace(/一時/g, ' 短时');
-    }
-    return telop;
+    const rules = weatherTermsMap[lang];
+    if (!rules) return telop;
+    let result = telop;
+    rules.forEach(([pattern, replacement]) => { result = result.replace(pattern, replacement); });
+    // 連続スペースを整理
+    return result.replace(/\s+/g, ' ').trim();
 }
 
-// 文字列から適切な絵文字を1つ返す関数
+// 文字列から適切な絵文字を1つ返す関数（ひらがな・漢字両対応）
 function getWeatherIcon(text) {
+    if (text.includes('雷')) return '⚡';
     if (text.includes('雨')) return '☔';
     if (text.includes('雪')) return '❄️';
-    if (text.includes('曇')) return '☁️';
+    if (text.includes('くもり') || text.includes('曇')) return '☁️';
     if (text.includes('晴')) return '☀️';
     return '🌈';
 }
 
-// 文字列から適切な単色カラーを返す関数
+// 文字列から適切な単色カラーを返す関数（ひらがな・漢字両対応）
 function getWeatherColor(text) {
     if (text.includes('雨')) return '#EDE7F6'; // 紫グレー
     if (text.includes('雪')) return '#ECEFF1'; // 白グレー
-    if (text.includes('曇')) return '#E0E0E0'; // くもりグレー
+    if (text.includes('くもり') || text.includes('曇')) return '#E0E0E0'; // くもりグレー
     if (text.includes('晴')) return '#E3F2FD'; // 快晴ブルー
     return '#FFF3E0';
 }
@@ -513,11 +530,11 @@ async function searchFromLocalDB() {
         const nameDisplay = getSpotField(spot, 'name');
         const currentMemo = getSpotField(spot, 'memo');
         const popupId = `memo-${spot.id}`;
-
+        const streetViewUrl = `https://maps.google.com/?cbll=${spot.lat},${spot.lng}&cbp=12,0,,0,5&layer=c&z=17`;
         const popup = `<div style="text-align:center;width:180px">
             <b style="font-size:14px">${nameDisplay}</b><br>
             ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            
+            <a href="${streetViewUrl}" target="_blank" style="display:block; margin-top:6px; padding:4px 0; font-size:11px; background:#e67e22; color:white; text-decoration:none; border-radius:3px; font-weight:bold;">📷 ${translate('street_view')}</a>
             ${currentMemo ? `
                 <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
                         style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
@@ -572,11 +589,14 @@ async function drawRoute(routeId) {
         const nameDisplay = getSpotField(spot, 'name');
         const currentMemo = getSpotField(spot, 'memo');
         const popupId = `route-memo-${spot.id}-${i}`;
+        const streetViewUrl = `https://maps.google.com/?cbll=${spot.lat},${spot.lng}&cbp=12,0,,0,5&layer=c&z=17`;
 
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${nameDisplay}</b><br>
             ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            
+            <a href="${streetViewUrl}" target="_blank" style="display:block; margin-top:6px; padding:4px 0; font-size:11px; background:#e67e22; color:white; text-decoration:none; border-radius:3px; font-weight:bold;">
+            📷 ${translate('street_view')}
+            </a>
             ${currentMemo ? `
                 <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
                         style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
@@ -772,10 +792,14 @@ async function generateRoute() {
         const memo = getSpotField(s, 'memo');
         const popupId = `gen-memo-${s.id}-${i}`;
         const isFixed = routePlanSpots.find(f => f.id === s.id);
+        const streetViewUrl = `https://maps.google.com/?cbll=${spot.lat},${spot.lng}&cbp=12,0,,0,5&layer=c&z=17`;
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${name}${isFixed ? ' 📌' : ''}</b><br>
             ${s.image ? `<img src="${s.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            ${memo ? `<button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none'" style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">${translate('view_info')}</button><p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3">${memo}</p>` : ''}
+        <a href="${streetViewUrl}" target="_blank" style="display:block; margin-top:6px; padding:4px 0; font-size:11px; background:#e67e22; color:white; text-decoration:none; border-radius:3px; font-weight:bold;">
+        📷 ${translate('street_view')}
+        </a>
+            ${memo ? `<button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none'" style="margin-top:6px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">${translate('view_info')}</button><p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3">${memo}</p>` : ''}
             <div style="font-size:11px;color:#666;margin-top:8px">${getGroupLabel(s.group)}</div>
         </div>`;
         L.marker([s.lat, s.lng], { icon: getIconForSpot(s) }).bindPopup(popup).addTo(markerGroup);
