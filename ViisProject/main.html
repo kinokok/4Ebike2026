@@ -8,11 +8,34 @@
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; padding: 10px; font-family: sans-serif; background-color: #f5f5f5; }
-        h1 { font-size: 20px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; }
+        h1 { font-size: 18px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
         #map { width: 100%; height: 50vh; margin-top: 10px; border: 1px solid #ccc; }
 
+        /* 天気表示エリア（タイムライン＆グラデーション強化） */
+        .weather-wrap { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 13px; 
+            background: #fff; 
+            padding: 6px 14px; 
+            border: 1px solid #ddd; 
+            border-radius: 20px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+        .weather-timeline { 
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+            font-size: 15px; 
+            font-weight: bold;
+        }
+        .weather-arrow { font-size: 11px; color: #666; margin: 0 2px; }
+        .weather-info { font-weight: bold; color: #222; font-size: 12px; margin-left: 2px; }
+
         /* 言語切り替え */
-        #lang-btn { font-size: 12px; padding: 4px 10px; cursor: pointer; border: 1px solid #2196F3; border-radius: 4px; background: #fff; color: #2196F3; }
+        #lang-btn { font-size: 12px; padding: 5px 12px; cursor: pointer; border: 1px solid #2196F3; border-radius: 20px; background: #fff; color: #2196F3; font-weight: bold; }
         #lang-btn:hover { background: #E3F2FD; }
 
         /* タブ */
@@ -34,31 +57,8 @@
         .route-meta { font-size: 12px; color: #666; margin-bottom: 5px; }
 
         /* ルートジェネレーター */
-        .gen-section { margin-bottom: 12px; }
-        .gen-section label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-bottom: 4px; }
-        .pad-wrap { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
-        .pad-area { width: 100%; height: 180px; position: relative; cursor: crosshair; border: 1px solid #bbb; border-radius: 4px; background: #fff; overflow: hidden; user-select: none; }
-        .pad-axis-h { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #ddd; }
-        .pad-axis-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #ddd; }
-        .pad-ax { position: absolute; font-size: 10px; color: #aaa; }
-        .pad-dot { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #2196F3; border: 3px solid #1565C0; transform: translate(-50%, -50%); cursor: grab; transition: box-shadow 0.1s; }
-        .pad-dot:active { cursor: grabbing; box-shadow: 0 0 0 6px rgba(33,150,243,0.2); }
-        .quad-hint { position: absolute; font-size: 9px; color: #bbb; pointer-events: none; }
-        .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .slider-box { background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 8px; }
-        .slider-box label { font-size: 11px; color: #666; display: block; margin-bottom: 4px; }
-        .slider-box input[type=range] { width: 100%; }
-        .slider-val { font-size: 13px; font-weight: bold; color: #333; text-align: right; }
         .gen-btn { width: 100%; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; background: #2196F3; color: #fff; border: none; border-radius: 4px; margin-bottom: 10px; }
-        .gen-result { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
-        .gen-result h4 { margin: 0 0 4px 0; font-size: 14px; color: #222; }
-        .gen-meta { font-size: 12px; color: #666; margin-bottom: 6px; }
-        .spot-chips { margin-bottom: 8px; }
-        .chip { display: inline-block; background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 12px; padding: 2px 8px; font-size: 11px; margin: 2px; color: #1565C0; }
-        .maps-link { display: inline-block; background: #4CAF50; color: #fff; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: bold; }
-        .maps-link:hover { background: #388E3C; }
-        .regen-btn { margin-left: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; background: #fff; border: 1px solid #2196F3; color: #2196F3; border-radius: 4px; }
-
+        
         #status { margin-top: 8px; font-size: 13px; font-weight: bold; }
 
         /* 現在地ボタン */
@@ -88,7 +88,15 @@
 
 <h1>
     <span id="t-title">🚲 舞鶴市 E-BikeProject</span>
-    <button id="lang-btn" onclick="toggleLang()">English</button>
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <!-- 天気表示エリア（タイムライン進化版） -->
+        <div class="weather-wrap" id="weather-box">
+            📍<span id="t-weather-city" style="font-weight: bold;">舞鶴</span>:
+            <span class="weather-timeline" id="weather-timeline">⏳</span>
+            <span id="weather-text" class="weather-info">--</span>
+        </div>
+        <button id="lang-btn" onclick="toggleLang()">English</button>
+    </div>
 </h1>
 
 <div class="tab-container">
@@ -110,7 +118,8 @@
                 <option value="sightseeing" data-ja="観光・史跡" data-en="Sightseeing">観光・史跡</option>
                 <option value="activity" data-ja="アクティビティ" data-en="Activity">アクティビティ</option>
             </optgroup>
-        </select>        <input type="text" id="searchKeyword" placeholder="名称で絞り込み / Search name">
+        </select>
+        <input type="text" id="searchKeyword" placeholder="名称で絞り込み / Search name">
         <button class="action-btn" onclick="searchFromLocalDB()" id="t-search-btn">この範囲で検索</button>
         <button class="clear-btn" onclick="clearMap()" id="t-clear-btn">クリア</button>
     </div>
@@ -134,13 +143,13 @@
         </div>
 
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-            <label style="font-size:13px;font-weight:bold">立ち寄り数</label>
+            <label style="font-size:13px;font-weight:bold;" id="t-spots-label">立ち寄り数</label>
             <input type="range" id="spots-slider" min="2" max="6" value="3" step="1"
                    oninput="document.getElementById('spots-val').textContent=this.value">
-            <span id="spots-val" style="font-weight:bold">3</span> 箇所
+            <span id="spots-val" style="font-weight:bold">3</span> <span id="t-spots-unit">箇所</span>
         </div>
 
-        <button class="gen-btn" id="gen-btn" onclick="generateRoute()" style="width:100%;padding:10px;font-size:14px;font-weight:bold;cursor:pointer;background:#2196F3;color:#fff;border:none;border-radius:4px;margin-bottom:10px">ルートを生成する</button>
+        <button class="gen-btn" id="t-gen-btn" onclick="generateRoute()">ルートを生成する</button>
         <div id="gen-result" style="display:none;background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:10px"></div>
     </div>
 </div>
@@ -160,12 +169,15 @@
 <script>
 // ===== 言語管理 =====
 let lang = 'ja';
+let rawWeatherData = null; 
+
 function toggleLang() {
     lang = lang === 'ja' ? 'en' : 'ja';
     document.getElementById('lang-btn').textContent = lang === 'ja' ? 'English' : '日本語';
     applyLang();
 }
 function t(ja, en) { return lang === 'ja' ? ja : en; }
+
 function applyLang() {
     document.getElementById('t-title').textContent = t('🚲 舞鶴市 E-BikeProject', '🚲 Maizuru City E-Bike Project');
     document.getElementById('t-tab1').textContent = t('スポットを探す', 'Find Spots');
@@ -173,11 +185,11 @@ function applyLang() {
     document.getElementById('t-tab3').textContent = t('ルート生成', 'Route Generator');
     document.getElementById('t-search-btn').textContent = t('この範囲で検索', 'Search this area');
     document.getElementById('t-clear-btn').textContent = t('クリア', 'Clear');
-    document.getElementById('t-dist-label').textContent = t('距離 / Distance', 'Distance');
-    document.getElementById('t-spots-label').textContent = t('立ち寄り数 / Stops', 'Number of stops');
-    document.getElementById('t-stops-unit').textContent = t('箇所', 'stops');
+    document.getElementById('t-spots-label').textContent = t('立ち寄り数', 'Stops');
+    document.getElementById('t-spots-unit').textContent = t('箇所', 'stops');
     document.getElementById('t-gen-btn').textContent = t('ルートを生成する', 'Generate Route');
     document.getElementById('searchKeyword').placeholder = t('名称で絞り込み', 'Search by name');
+    document.getElementById('t-weather-city').textContent = t('舞鶴', 'Maizuru');
 
     document.querySelectorAll('#searchGroup option').forEach(opt => {
         if (opt.dataset.ja && opt.dataset.en) {
@@ -191,6 +203,101 @@ function applyLang() {
     });
 
     renderRouteList();
+    updateWeatherDisplay(); 
+}
+
+// ===== 天気時系列のビジュアル解析エンジン =====
+function translateWeather(telop) {
+    if (lang === 'ja') return telop;
+    return telop
+        .replace(/晴/g, 'Clear').replace(/曇/g, 'Cloudy').replace(/雨/g, 'Rain').replace(/雪/g, 'Snow')
+        .replace(/のち|後/g, '➔').replace(/時々/g, '/').replace(/一時/g, ' temporary');
+}
+
+// 文字列から適切な絵文字を1つ返す関数
+function getWeatherIcon(text) {
+    if (text.includes('雨')) return '☔';
+    if (text.includes('雪')) return '❄️';
+    if (text.includes('曇')) return '☁️';
+    if (text.includes('晴')) return '☀️';
+    return '🌈';
+}
+
+// 文字列から適切な単色カラーを返す関数
+function getWeatherColor(text) {
+    if (text.includes('雨')) return '#EDE7F6'; // 紫グレー
+    if (text.includes('雪')) return '#ECEFF1'; // 白グレー
+    if (text.includes('曇')) return '#E0E0E0'; // くもりグレー
+    if (text.includes('晴')) return '#E3F2FD'; // 快晴ブルー
+    return '#FFF3E0';
+}
+
+async function fetchMaizuruWeather() {
+    const weatherTextEl = document.getElementById('weather-text');
+    try {
+        const res = await fetch('https://www.jma.go.jp/bosai/forecast/data/forecast/260000.json');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        
+        const timeSeries = data[0].timeSeries[0];
+        const northernAreaIndex = timeSeries.areas.findIndex(area => area.area.code === "260020");
+        
+        if (northernAreaIndex !== -1) {
+            // 気象庁の生の全角スペース区切りのテキスト
+            rawWeatherData = timeSeries.areas[northernAreaIndex].weathers[0].replace(/ /g, ' '); 
+            updateWeatherDisplay();
+        }
+    } catch (e) {
+        weatherTextEl.textContent = 'Error';
+    }
+}
+
+function updateWeatherDisplay() {
+    const weatherTextEl = document.getElementById('weather-text');
+    const weatherTimelineEl = document.getElementById('weather-timeline');
+    const weatherBoxEl = document.getElementById('weather-box');
+    
+    if (!rawWeatherData) return;
+    
+    // 1. テキスト表記の反映（日英切替）
+    weatherTextEl.textContent = `(${translateWeather(rawWeatherData)})`;
+    
+    // 2. タイムライン風のイラスト生成解析
+    let cleanText = rawWeatherData.trim();
+    let htmlTimeline = "";
+    
+    if (cleanText.includes('後') || cleanText.includes('のち')) {
+        // 「〇〇 のち ✕✕」のパターン
+        const parts = cleanText.split(/後|のち/);
+        const icon1 = getWeatherIcon(parts[0]);
+        const icon2 = getWeatherIcon(parts[1]);
+        const col1 = getWeatherColor(parts[0]);
+        const col2 = getWeatherColor(parts[1]);
+        
+        htmlTimeline = `${icon1} <span class="weather-arrow">➔</span> ${icon2}`;
+        weatherBoxEl.style.background = `linear-gradient(90deg, ${col1} 0%, ${col2} 100%)`;
+        weatherBoxEl.style.borderColor = '#B0BEC5';
+        
+    } else if (cleanText.includes('時々') || cleanText.includes('一時')) {
+        // 「〇〇 時々 ✕✕」のパターン
+        const parts = cleanText.split(/時々|一時/);
+        const icon1 = getWeatherIcon(parts[0]);
+        const icon2 = getWeatherIcon(parts[1]);
+        const col = getWeatherColor(parts[0]);
+        
+        htmlTimeline = `${icon1}<span style="font-size:11px;margin-left:2px">(${icon2})</span>`;
+        weatherBoxEl.style.background = col;
+        weatherBoxEl.style.borderColor = '#CFD8DC';
+    } else {
+        // 変化なしの単一パターンの場合
+        const icon = getWeatherIcon(cleanText);
+        const col = getWeatherColor(cleanText);
+        htmlTimeline = icon;
+        weatherBoxEl.style.background = col;
+        weatherBoxEl.style.borderColor = '#90CAF9';
+    }
+    
+    weatherTimelineEl.innerHTML = htmlTimeline;
 }
 
 // ===== DB・地図初期化 =====
@@ -215,6 +322,7 @@ let locationMarker = null;
 
 window.addEventListener('load', async () => {
     const statusEl = document.getElementById('status');
+    fetchMaizuruWeather(); 
     try {
         if (typeof maizuruSpotsData === 'undefined' || typeof maizuruRoutesData === 'undefined') {
             throw new Error(t("データファイルが読み込めません", "Data files could not be loaded"));
@@ -265,7 +373,7 @@ async function searchFromLocalDB() {
         const nameDisplay = lang === 'en' && spot.name_en ? spot.name_en : spot.name;
         const currentMemo = lang === 'en' && spot.memo_en ? spot.memo_en : spot.memo;
         const popupId = `memo-${spot.id}`;
-        const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${spot.lat},${spot.lng}`;
+        const streetViewUrl = `http://googleusercontent.com/maps.google.com/?q=&layer=c&cbll=${spot.lat},${spot.lng}`; 
 
         const popup = `<div style="text-align:center;width:180px">
             <b style="font-size:14px">${nameDisplay}</b><br>
@@ -310,21 +418,18 @@ async function drawRoute(routeId) {
     clearMap();
     const route = routesData.find(r => r.route_id === routeId);
     if (!route) return;
-    const latlngs = [], waypoints = [], spotNames = [], spotObjects = [];
+    const latlngs = [], waypoints = [];
     
     for (let i = 0; i < route.waypoints.length; i++) {
         const spot = await db.spots.get(route.waypoints[i]);
         if (!spot) continue;
         latlngs.push([spot.lat, spot.lng]);
         waypoints.push(`${spot.lat},${spot.lng}`);
-        spotObjects.push(spot);
         
         const nameDisplay = lang === 'en' && spot.name_en ? spot.name_en : spot.name;
-        spotNames.push(nameDisplay);
-        
         const currentMemo = lang === 'en' && spot.memo_en ? spot.memo_en : spot.memo;
         const popupId = `route-memo-${spot.id}-${i}`;
-        const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${spot.lat},${spot.lng}`;
+        const streetViewUrl = `http://googleusercontent.com/maps.google.com/?q=&layer=c&cbll=${spot.lat},${spot.lng}`; 
 
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${nameDisplay}</b><br>
@@ -339,7 +444,7 @@ async function drawRoute(routeId) {
                     ${currentMemo}
                 </p>
             ` : ''}
-            <div style="font-size:11px;color:#666;margin-top:8px">${spot.genre}</div>
+            <div style="font-size:11px;color:#666;margin-top:8px">${s.genre || ''}</div>
         </div>`;
         L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popup).addTo(markerGroup);
     }
@@ -349,7 +454,7 @@ async function drawRoute(routeId) {
     
     const wp = [...waypoints];
     const origin = wp.shift(), dest = wp.pop() || origin, wpStr = wp.join('|');
-    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`;
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`; 
     if (wpStr) url += `&waypoints=${wpStr}`;
     document.getElementById('status').innerHTML = `
         ✅ ${route.title}
@@ -440,7 +545,7 @@ function sortByNearest(spots) {
 async function generateRoute() {
     const nStops = parseInt(document.getElementById('spots-slider').value);
     const resultEl = document.getElementById('gen-result');
-    const genBtn = document.getElementById('gen-btn');
+    const genBtn = document.getElementById('t-gen-btn');
     resultEl.style.display = 'block';
     resultEl.innerHTML = t('計算中...', 'Calculating...');
 
@@ -479,7 +584,7 @@ async function generateRoute() {
     const wpCoords = best.map(s => `${s.lat},${s.lng}`);
     const origin = wpCoords[0], dest = wpCoords[wpCoords.length-1];
     const midWp = wpCoords.slice(1,-1).join('|');
-    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`;
+    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`; 
     if (midWp) mapsUrl += `&waypoints=${midWp}`;
 
     const chips = best.map((s, i) => {
@@ -521,7 +626,7 @@ async function generateRoute() {
         const memo = lang === 'en' && s.memo_en ? s.memo_en : s.memo;
         const popupId = `gen-memo-${s.id}-${i}`;
         const isFixed = routePlanSpots.find(f => f.id === s.id);
-        const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${s.lat},${s.lng}`;
+        const streetViewUrl = `http://googleusercontent.com/maps.google.com/?q=&layer=c&cbll=${s.lat},${s.lng}`; 
 
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${name}${isFixed ? ' 📌' : ''}</b><br>
