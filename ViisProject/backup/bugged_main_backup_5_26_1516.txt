@@ -95,6 +95,9 @@
     <div class="tab-buttons">
         <button class="tab-btn active" onclick="switchTab('tab-search', this)" id="tb-search">📍 <span id="t-tab1">スポットを探す</span></button>
         <button class="tab-btn" onclick="switchTab('tab-routes', this)" id="tb-routes">🚲 <span id="t-tab2">おすすめルート</span></button>
+
+        <button class="tab-btn" onclick="switchTab('tab-gen', this)" id="tb-gen">🎯 ルート生成<span id="routeplan-badge" style="display:none;background:#E91E63;color:white;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px">0</span></button>
+
         <button class="tab-btn" onclick="switchTab('tab-gen', this)" id="tb-gen">🎯 <span id="t-tab3">ルート生成</span><span id="routeplan-badge" style="display:none;background:#E91E63;color:white;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px">0</span></button>
     </div>
 
@@ -102,16 +105,17 @@
     <div id="tab-search" class="tab-content active">
         <select id="searchGroup">
             <option value="all" data-ja="すべてのスポット" data-en="All Spots">すべてのスポット</option>
-            <optgroup data-ja="飲食店（青ピン）" data-en="Restaurants (Blue)" label="飲食店（青ピン）">
+            <optgroup label="飲食店（青ピン）/ Restaurants (Blue)">
                 <option value="meal" data-ja="お食事" data-en="Dining">お食事</option>
                 <option value="alcohol_meat" data-ja="お酒・肉" data-en="Drinks & Meat">お酒・肉</option>
                 <option value="cafe_sweets" data-ja="カフェ" data-en="Cafe">カフェ</option>
             </optgroup>
-            <optgroup data-ja="観光・レジャー（赤ピン）" data-en="Sightseeing (Red)" label="観光・レジャー（赤ピン）">
+            <optgroup label="観光・レジャー（赤ピン）/ Sightseeing (Red)">
                 <option value="sightseeing" data-ja="観光・史跡" data-en="Sightseeing">観光・史跡</option>
                 <option value="activity" data-ja="アクティビティ" data-en="Activity">アクティビティ</option>
             </optgroup>
-        </select>        <input type="text" id="searchKeyword" placeholder="名称で絞り込み / Search name">
+        </select>
+        <input type="text" id="searchKeyword" placeholder="名称で絞り込み / Search name">
         <button class="action-btn" onclick="searchFromLocalDB()" id="t-search-btn">この範囲で検索</button>
         <button class="clear-btn" onclick="clearMap()" id="t-clear-btn">クリア</button>
     </div>
@@ -146,7 +150,8 @@
         <button class="gen-btn" id="gen-btn" onclick="generateRoute()" style="width:100%;padding:10px;font-size:14px;font-weight:bold;cursor:pointer;background:#2196F3;color:#fff;border:none;border-radius:4px;margin-bottom:10px">ルートを生成する</button>
         <div id="gen-result" style="display:none;background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:10px"></div>
     </div>
-</div>
+
+
 
 <div id="status">システム準備中... / Loading...</div>
 <div id="map-wrap">
@@ -180,18 +185,6 @@ function applyLang() {
     document.getElementById('t-stops-unit').textContent = t('箇所', 'stops');
     document.getElementById('t-gen-btn').textContent = t('ルートを生成する', 'Generate Route');
     document.getElementById('searchKeyword').placeholder = t('名称で絞り込み', 'Search by name');
-
-    document.querySelectorAll('#searchGroup option').forEach(opt => {
-        if (opt.dataset.ja && opt.dataset.en) {
-            opt.textContent = t(opt.dataset.ja, opt.dataset.en);
-        }
-    });
-    document.querySelectorAll('#searchGroup optgroup').forEach(group => {
-        if (group.dataset.ja && group.dataset.en) {
-            group.label = t(group.dataset.ja, group.dataset.en);
-        }
-    });
-
     renderRouteList();
 }
 
@@ -282,9 +275,9 @@ async function searchFromLocalDB() {
                     ${currentMemo}
                 </p>
             ` : ''}
-            
+
             <button onclick="addToRoutePlan('${spot.id}')" style="margin-top:6px;padding:4px 8px;font-size:11px;background:#E91E63;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">📌 ルートに追加</button>
-            
+
             <div style="font-size:11px;color:#666;margin-top:8px">${spot.genre}</div>
         </div>`;
         L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popup).addTo(markerGroup);
@@ -312,6 +305,7 @@ function renderRouteList() {
 
 async function drawRoute(routeId) {
     clearMap();
+
     const route = routesData.find(r => r.route_id === routeId);
     if (!route) return;
     const latlngs = [], waypoints = [];
@@ -359,7 +353,9 @@ async function drawRoute(routeId) {
 }
 
 // ===== クリア =====
-function clearMap() {
+function clearMap()
+//追加
+ {
     markerGroup.clearLayers();
     if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
     document.getElementById('status').innerHTML = '';
@@ -372,7 +368,7 @@ function addToRoutePlan(spotId) {
     db.spots.get(spotId).then(spot => {
         if (!spot) return;
         if (routePlanSpots.find(s => s.id === spotId)) {
-            alert(t('すでに追加済みです', 'Already added'));
+            alert('すでに追加済みです');
             return;
         }
         routePlanSpots.push(spot);
@@ -397,12 +393,12 @@ function renderRoutePlan() {
     emptyEl.style.display = routePlanSpots.length ? 'none' : 'block';
     listEl.innerHTML = '';
     routePlanSpots.forEach((spot, i) => {
-        const memo = lang === 'en' && spot.memo_en ? spot.memo_en : spot.memo;
+        const memo = spot.memo || '';
         listEl.innerHTML += `
         <div style="border:1px solid #ddd;border-radius:8px;margin-bottom:10px;overflow:hidden;background:#fff">
             <div style="display:flex;align-items:center;padding:10px;gap:8px">
                 <span style="background:#E91E63;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;flex-shrink:0">${i+1}</span>
-                <span style="flex:1;font-size:14px;font-weight:bold">${lang === 'en' && spot.name_en ? spot.name_en : spot.name}</span>
+                <span style="flex:1;font-size:14px;font-weight:bold">${spot.name}</span>
                 <span style="font-size:11px;color:#999">${spot.genre}</span>
                 <button onclick="removeFromRoutePlan('${spot.id}')" style="background:none;border:none;color:#d32f2f;cursor:pointer;font-size:18px;padding:0 4px">✕</button>
             </div>
@@ -414,7 +410,7 @@ function renderRoutePlan() {
     });
 }
 
-// ===== 距離計算・ソート =====
+// ===== 距離計算 =====
 function haversine(a, b) {
     const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180;
     const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180) * Math.cos(b.lat*Math.PI/180) * Math.sin(dLng/2)**2;
@@ -442,7 +438,7 @@ async function generateRoute() {
     const resultEl = document.getElementById('gen-result');
     const genBtn = document.getElementById('gen-btn');
     resultEl.style.display = 'block';
-    resultEl.innerHTML = t('計算中...', 'Calculating...');
+    resultEl.innerHTML = '計算中...';
 
     const fixed = [...routePlanSpots];
     const remaining = Math.max(0, nStops - fixed.length);
@@ -484,48 +480,27 @@ async function generateRoute() {
 
     const chips = best.map((s, i) => {
         const isFixed = routePlanSpots.find(f => f.id === s.id);
-        return `<span style="display:inline-block;background:${isFixed ? '#FCE4EC' : '#E3F2FD'};border:1px solid ${isFixed ? '#E91E63' : '#90CAF9'};border-radius:12px;padding:2px 8px;font-size:11px;margin:2px;color:${isFixed ? '#C62828' : '#1565C0'}">${i+1}. ${lang === 'en' && s.name_en ? s.name_en : s.name}${isFixed ? ' 📌' : ''}</span>`;
+        return `<span style="display:inline-block;background:${isFixed ? '#FCE4EC' : '#E3F2FD'};border:1px solid ${isFixed ? '#E91E63' : '#90CAF9'};border-radius:12px;padding:2px 8px;font-size:11px;margin:2px;color:${isFixed ? '#C62828' : '#1565C0'}">${i+1}. ${s.name}${isFixed ? ' 📌' : ''}</span>`;
     }).join('');
 
-    // 各スポットのカード表示用HTMLを構築（画像・説明を常に展開）
-    let spotsCardsHtml = '';
-    best.forEach((s, i) => {
-        const isFixed = routePlanSpots.find(f => f.id === s.id);
-        const name = lang === 'en' && s.name_en ? s.name_en : s.name;
-        const memo = lang === 'en' && s.memo_en ? s.memo_en : s.memo;
-        spotsCardsHtml += `
-        <div style="border:1px solid #ddd;border-radius:8px;margin-bottom:10px;overflow:hidden;background:#fff;text-align:left">
-            <div style="display:flex;align-items:center;padding:10px;gap:8px">
-                <span style="background:${isFixed ? '#E91E63' : '#2196F3'};color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;flex-shrink:0">${i+1}</span>
-                <span style="flex:1;font-size:14px;font-weight:bold">${name}${isFixed ? ' 📌' : ''}</span>
-                <span style="font-size:11px;color:#999">${s.genre}</span>
-            </div>
-            <div style="padding:0 10px 10px 10px;border-top:1px solid #f0f0f0">
-                ${s.image ? `<img src="${s.image}" style="width:100%;border-radius:6px;margin-bottom:6px;margin-top:8px">` : ''}
-                ${memo ? `<p style="font-size:12px;color:#555;margin:0">${memo}</p>` : ''}
-            </div>
-        </div>`;
-    });
-
     resultEl.innerHTML = `
-        <div style="font-size:12px;color:#666;margin-bottom:8px">約 ${totalDist.toFixed(1)} km ／ 目安 ${timeMin} 分 ／ ${best.length} スポット</div>
-        <div style="margin-bottom:10px">${chips}</div>
-        <div style="margin-bottom:12px">${spotsCardsHtml}</div>
-        <a href="${mapsUrl}" target="_blank" style="display:block;text-align:center;background:#4CAF50;color:#fff;padding:10px;border-radius:4px;text-decoration:none;font-size:14px;font-weight:bold">Google マップでナビ開始</a>
+        <div style="font-size:12px;color:#666;margin-bottom:6px">約 ${totalDist.toFixed(1)} km ／ 目安 ${timeMin} 分 ／ ${best.length} スポット</div>
+        <div style="margin-bottom:8px">${chips}</div>
+        <a href="${mapsUrl}" target="_blank" style="display:inline-block;background:#4CAF50;color:#fff;padding:6px 12px;border-radius:4px;text-decoration:none;font-size:13px;font-weight:bold">Google マップでナビ開始</a>
     `;
 
-    genBtn.textContent = '🔄 ' + t('再生成する', 'Regenerate');
+    // ボタンを再生成に変更
+    genBtn.textContent = '🔄 再生成する';
 
     clearMap();
     best.forEach((s, i) => {
-        const name = lang === 'en' && s.name_en ? s.name_en : s.name;
-        const memo = lang === 'en' && s.memo_en ? s.memo_en : s.memo;
+        const memo = s.memo || '';
         const popupId = `gen-memo-${s.id}-${i}`;
         const isFixed = routePlanSpots.find(f => f.id === s.id);
         const popup = `<div style="text-align:center;width:180px">
-            <b>${i+1}. ${name}${isFixed ? ' 📌' : ''}</b><br>
+            <b>${i+1}. ${s.name}${isFixed ? ' 📌' : ''}</b><br>
             ${s.image ? `<img src="${s.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            ${memo ? `<button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none'" style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">${t('📖 説明を見る', '📖 View Info')}</button><p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3">${memo}</p>` : ''}
+            ${memo ? `<button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none'" style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">📖 説明を見る</button><p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3">${memo}</p>` : ''}
             <div style="font-size:11px;color:#666;margin-top:8px">${s.genre}</div>
         </div>`;
         L.marker([s.lat, s.lng], { icon: getIconForSpot(s) }).bindPopup(popup).addTo(markerGroup);
@@ -534,6 +509,186 @@ async function generateRoute() {
     map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
 }
 
+    markerGroup.clearLayers();
+    if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
+    document.getElementById('status').innerHTML = '';
+}
+
+// ===== ルートジェネレーター: パッド =====
+let padX = 0, padY = 0, isDragging = false;
+const padEl = document.getElementById('pad');
+const dotEl = document.getElementById('pad-dot');
+
+function updateDot(x, y) {
+    const r = padEl.getBoundingClientRect();
+    const px = Math.max(0, Math.min(r.width, x));
+    const py = Math.max(0, Math.min(r.height, y));
+    padX = (px / r.width) * 2 - 1;   // fun: -1(calm) to +1(fun)
+    padY = -((py / r.height) * 2 - 1); // indoor: -1(outdoor) to +1(indoor)
+    dotEl.style.left = px + 'px';
+    dotEl.style.top = py + 'px';
+}
+padEl.addEventListener('mousedown', e => {
+    isDragging = true;
+    const r = padEl.getBoundingClientRect();
+    updateDot(e.clientX - r.left, e.clientY - r.top);
+});
+document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const r = padEl.getBoundingClientRect();
+    updateDot(e.clientX - r.left, e.clientY - r.top);
+});
+document.addEventListener('mouseup', () => isDragging = false);
+padEl.addEventListener('touchstart', e => {
+    isDragging = true;
+    const r = padEl.getBoundingClientRect();
+    const t = e.touches[0];
+    updateDot(t.clientX - r.left, t.clientY - r.top);
+    e.preventDefault();
+}, { passive: false });
+document.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const r = padEl.getBoundingClientRect();
+    const t = e.touches[0];
+    updateDot(t.clientX - r.left, t.clientY - r.top);
+    e.preventDefault();
+}, { passive: false });
+document.addEventListener('touchend', () => isDragging = false);
+
+// 初期位置: 中央
+window.addEventListener('load', () => {
+    updateDot(padEl.offsetWidth / 2, padEl.offsetHeight / 2);
+});
+
+// ===== ルートジェネレーター: 生成 =====
+function haversine(a, b) {
+    const R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180;
+    const s = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180) * Math.cos(b.lat*Math.PI/180) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
+}
+function spotScore(spot) {
+    const di = (spot.indoor || 0) - padY;
+    const df = (spot.fun || 0) - padX;
+    let score = Math.sqrt(di*di + df*df);
+    if (locationMarker) {
+        const loc = locationMarker.getLatLng();
+        const d = haversine({ lat: loc.lat, lng: loc.lng }, spot);
+        score += d * 0.05;
+    }
+    return score;
+}
+
+function sortByNearest(spots) {
+    const start = locationMarker
+        ? { lat: locationMarker.getLatLng().lat, lng: locationMarker.getLatLng().lng }
+        : spots[0];
+    const result = [], remaining = [...spots];
+    let current = start;
+    while (remaining.length) {
+        let minD = Infinity, minI = 0;
+        remaining.forEach((s, i) => {
+            const d = haversine(current, s);
+            if (d < minD) { minD = d; minI = i; }
+        });
+        result.push(remaining.splice(minI, 1)[0]);
+        current = result[result.length - 1];
+    }
+    return result;
+}
+
+async function generateRoute() {
+    const nStops = parseInt(document.getElementById('spots-slider').value);
+    const maxDist = parseFloat(document.getElementById('dist-slider').value);
+    const resultEl = document.getElementById('gen-result');
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = t('計算中...', 'Calculating...');
+
+    const allSpots = await db.spots.toArray();
+
+    // 好みスコアでソート
+    const sorted = [...allSpots]
+        .filter(s => s.lat && s.lng)
+        .sort((a, b) => spotScore(a) - spotScore(b));
+
+    // groupごとに上位2件ずつ候補に入れる
+    const groupCount = {};
+    const candidates = [];
+    for (const spot of sorted) {
+        const c = groupCount[spot.group] || 0;
+        if (c >= 2) continue;
+        candidates.push(spot);
+        groupCount[spot.group] = c + 1;
+        if (candidates.length >= nStops * 3) break;
+    }
+
+    // 候補が足りなければ制限なしで補充
+    if (candidates.length < nStops) {
+        for (const spot of sorted) {
+            if (!candidates.includes(spot)) candidates.push(spot);
+            if (candidates.length >= nStops * 3) break;
+        }
+    }
+
+    // 先頭からnStops件選んで距離順に並べる
+    const best = sortByNearest(candidates.slice(0, nStops));
+
+    let totalDist = 0;
+    for (let i = 1; i < best.length; i++) totalDist += haversine(best[i-1], best[i]);
+    const timeMin = Math.round(totalDist / 12 * 60 + best.length * 15);
+
+    const themeLabel = (() => {
+        if (padY > 0.3 && padX < -0.3) return t('落ち着いた屋内コース', 'Calm Indoor Course');
+        if (padY > 0.3 && padX > 0.3) return t('賑やか屋内コース', 'Lively Indoor Course');
+        if (padY < -0.3 && padX < -0.3) return t('のんびり自然コース', 'Relaxed Nature Course');
+        if (padY < -0.3 && padX > 0.3) return t('アクティブ屋外コース', 'Active Outdoor Course');
+        return t('バランス型コース', 'Balanced Course');
+    })();
+
+    const wpCoords = best.map(s => `${s.lat},${s.lng}`);
+    const origin = wpCoords[0];
+    const dest = wpCoords[wpCoords.length - 1];
+    const midWp = wpCoords.slice(1, -1).join('|');
+    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`;
+    if (midWp) mapsUrl += `&waypoints=${midWp}`;
+
+    const chips = best.map((s, i) => {
+        const name = lang === 'en' && s.name_en ? s.name_en : s.name;
+        return `<span class="chip">${i+1}. ${name}</span>`;
+    }).join('');
+
+    resultEl.innerHTML = `
+        <h4>${themeLabel}</h4>
+        <div class="gen-meta">${t('約','~')} ${totalDist.toFixed(1)} km / ${t('目安','Est.')} ${timeMin} ${t('分','min')} / ${best.length} ${t('スポット','stops')}</div>
+        <div class="spot-chips">${chips}</div>
+        <a class="maps-link" href="${mapsUrl}" target="_blank">${t('Google マップでナビ開始','Navigate with Google Maps')}</a>
+        <button class="regen-btn" onclick="generateRoute()">${t('別のルートを生成','Try again')}</button>
+    `;
+
+    clearMap();
+    const latlngs = best.map(s => [s.lat, s.lng]);
+    best.forEach((s, i) => {
+        const name = lang === 'en' && s.name_en ? s.name_en : s.name;
+        const currentMemo = lang === 'en' && s.memo_en ? s.memo_en : s.memo;
+        const popupId = `gen-memo-${s.id}-${i}`;
+        const popup = `<div style="text-align:center;width:180px">
+            <b>${i+1}. ${name}</b><br>
+            ${s.image ? `<img src="${s.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+            ${currentMemo ? `
+                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';"
+                        style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">
+                    ${t('📖 説明を見る', '📖 View Info')}
+                </button>
+                <p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3">
+                    ${currentMemo}
+                </p>
+            ` : ''}
+            <div style="font-size:11px;color:#666;margin-top:8px"><small>${s.genre}</small></div>
+        </div>`;
+        L.marker([s.lat, s.lng], { icon: getIconForSpot(s) }).bindPopup(popup).addTo(markerGroup);
+    });
+    routePolyline = L.polyline(latlngs, { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
+    map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
+}
 // ===== 現在地追跡 =====
 let locationWatchId = null;
 let locationMarker = null;

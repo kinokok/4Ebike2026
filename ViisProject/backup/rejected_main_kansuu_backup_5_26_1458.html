@@ -1,0 +1,38 @@
+
+    
+    <!-- タブ3: ルート生成(旧) -->
+    <div id="tab-gen" class="tab-content">
+        <div class="gen-section">
+            <label id="t-pad-label">好みのエリアをドラッグ / Drag to your preference</label>
+            <div class="pad-wrap">
+                <div class="pad-area" id="pad">
+                    <div class="pad-axis-h"></div>
+                    <div class="pad-axis-v"></div>
+                    <span class="pad-ax" style="top:2px;left:50%;transform:translateX(-50%)">屋内 Indoor</span>
+                    <span class="pad-ax" style="bottom:2px;left:50%;transform:translateX(-50%)">屋外 Outdoor</span>
+                    <span class="pad-ax" style="left:2px;top:50%;transform:translateY(-50%)">落ち着き</span>
+                    <span class="pad-ax" style="right:2px;top:50%;transform:translateY(-50%)">楽しさ Fun</span>
+                    <span class="quad-hint" style="top:6px;left:6px">博物館・カフェ</span>
+                    <span class="quad-hint" style="top:6px;right:6px">居酒屋・体験</span>
+                    <span class="quad-hint" style="bottom:6px;left:6px">公園・神社</span>
+                    <span class="quad-hint" style="bottom:6px;right:6px">展望台・海</span>
+                    <div class="pad-dot" id="pad-dot"></div>
+                </div>
+            </div>
+        </div>
+        <div class="sliders">
+            <div class="slider-box">
+                <label id="t-dist-label">距離 / Distance</label>
+                <input type="range" id="dist-slider" min="2" max="20" value="8" step="1" oninput="document.getElementById('dist-val').textContent=this.value">
+                <div class="slider-val"><span id="dist-val">8</span> km</div>
+            </div>
+            <div class="slider-box">
+                <label id="t-spots-label">立ち寄り数 / Stops</label>
+                <input type="range" id="spots-slider" min="2" max="6" value="3" step="1" oninput="document.getElementById('spots-val').textContent=this.value">
+                <div class="slider-val"><span id="spots-val">3</span> <span id="t-stops-unit">箇所</span></div>
+            </div>
+        </div>
+        <button class="gen-btn" onclick="generateRoute()" id="t-gen-btn">ルートを生成する / Generate Route</button>
+        <div id="gen-result" style="display:none" class="gen-result"></div>
+    </div>
+</div>
