@@ -101,17 +101,16 @@
     <div id="tab-search" class="tab-content active">
         <select id="searchGroup">
             <option value="all" data-ja="すべてのスポット" data-en="All Spots">すべてのスポット</option>
-            <optgroup label="飲食店（青ピン）/ Restaurants (Blue)">
+            <optgroup data-ja="飲食店（青ピン）" data-en="Restaurants (Blue)" label="飲食店（青ピン）">
                 <option value="meal" data-ja="お食事" data-en="Dining">お食事</option>
                 <option value="alcohol_meat" data-ja="お酒・肉" data-en="Drinks & Meat">お酒・肉</option>
                 <option value="cafe_sweets" data-ja="カフェ" data-en="Cafe">カフェ</option>
             </optgroup>
-            <optgroup label="観光・レジャー（赤ピン）/ Sightseeing (Red)">
+            <optgroup data-ja="観光・レジャー（赤ピン）" data-en="Sightseeing (Red)" label="観光・レジャー（赤ピン）">
                 <option value="sightseeing" data-ja="観光・史跡" data-en="Sightseeing">観光・史跡</option>
                 <option value="activity" data-ja="アクティビティ" data-en="Activity">アクティビティ</option>
             </optgroup>
-        </select>
-        <input type="text" id="searchKeyword" placeholder="名称で絞り込み / Search name">
+        </select>        <input type="text" id="searchKeyword" placeholder="名称で絞り込み / Search name">
         <button class="action-btn" onclick="searchFromLocalDB()" id="t-search-btn">この範囲で検索</button>
         <button class="clear-btn" onclick="clearMap()" id="t-clear-btn">クリア</button>
     </div>
@@ -174,7 +173,23 @@ function applyLang() {
     document.getElementById('t-tab3').textContent = t('ルート生成', 'Route Generator');
     document.getElementById('t-search-btn').textContent = t('この範囲で検索', 'Search this area');
     document.getElementById('t-clear-btn').textContent = t('クリア', 'Clear');
-    document.getElementById('searchKeyword').placeholder = t('名称で絞り込み / Search name', 'Search by name');
+    document.getElementById('t-dist-label').textContent = t('距離 / Distance', 'Distance');
+    document.getElementById('t-spots-label').textContent = t('立ち寄り数 / Stops', 'Number of stops');
+    document.getElementById('t-stops-unit').textContent = t('箇所', 'stops');
+    document.getElementById('t-gen-btn').textContent = t('ルートを生成する', 'Generate Route');
+    document.getElementById('searchKeyword').placeholder = t('名称で絞り込み', 'Search by name');
+
+    document.querySelectorAll('#searchGroup option').forEach(opt => {
+        if (opt.dataset.ja && opt.dataset.en) {
+            opt.textContent = t(opt.dataset.ja, opt.dataset.en);
+        }
+    });
+    document.querySelectorAll('#searchGroup optgroup').forEach(group => {
+        if (group.dataset.ja && group.dataset.en) {
+            group.label = t(group.dataset.ja, group.dataset.en);
+        }
+    });
+
     renderRouteList();
 }
 
