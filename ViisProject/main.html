@@ -83,7 +83,6 @@
         #locate-btn:hover { background: #f0f0f0; }
         #locate-btn.tracking { border-color: #2196F3; color: #2196F3; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -99,7 +98,6 @@
         <button class="tab-btn" onclick="switchTab('tab-gen', this)" id="tb-gen">🎯 <span id="t-tab3">ルート生成</span><span id="routeplan-badge" style="display:none;background:#E91E63;color:white;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px">0</span></button>
     </div>
 
-    <!-- タブ1: スポット検索 -->
     <div id="tab-search" class="tab-content active">
         <select id="searchGroup">
             <option value="all" data-ja="すべてのスポット" data-en="All Spots">すべてのスポット</option>
@@ -118,12 +116,10 @@
         <button class="clear-btn" onclick="clearMap()" id="t-clear-btn">クリア</button>
     </div>
 
-    <!-- タブ2: おすすめルート -->
     <div id="tab-routes" class="tab-content">
         <div id="route-list"><span id="t-loading">データを読み込んでいます...</span></div>
     </div>
 
-    <!-- タブ3: ルート生成 -->
     <div id="tab-gen" class="tab-content">
         <p style="font-size:12px;color:#666;margin:0 0 8px 0">📍 タブ1でスポットのポップアップから「ルートに追加」で選んでください</p>
         <div id="routeplan-empty" style="color:#999;font-size:13px;margin-bottom:10px">まだスポットが選ばれていません</div>
@@ -156,12 +152,6 @@
     <button id="locate-btn" title="現在地に移動">📍</button>
 </div>
 
-<div id="chart-container" style="background: #fff; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; display: none;">
-    <h4 style="margin: 0 0 8px 0; font-size: 13px;">📈 ルートの高低差（目安） / Elevation Profile</h4>
-    <div style="height: 140px; position: relative;">
-        <canvas id="elevationChart"></canvas>
-    </div>
-</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
@@ -206,7 +196,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 let markerGroup = L.featureGroup().addTo(map);
 let routePolyline = null;
 let routesData = [];
-let elevationChart = null; // グラフのインスタンス保持用
+let locationMarker = null;
 
 window.addEventListener('load', async () => {
     const statusEl = document.getElementById('status');
@@ -342,9 +332,6 @@ async function drawRoute(routeId) {
     routePolyline = L.polyline(latlngs, { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
     map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
     
-    // 📈 高低差データを取得してグラフを生成
-    updateElevationChart(spotObjects, spotNames);
-
     const wp = [...waypoints];
     const origin = wp.shift(), dest = wp.pop() || origin, wpStr = wp.join('|');
     let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`;
@@ -356,59 +343,11 @@ async function drawRoute(routeId) {
         </a>`;
 }
 
-// ===== 📈 国土地理院APIから標高を取得してグラフを描画するコアロジック =====
-async function updateElevationChart(spots, labels) {
-    const container = document.getElementById('chart-container');
-    if (!container) return;
-    container.style.display = 'block';
-
-    const elevations = [];
-    for (let spot of spots) {
-        try {
-            const res = await fetch(`https://cyberjapandata.gsi.go.jp/xyz/dem/elevation.php?lon=${spot.lng}&lat=${spot.lat}&outtype=JSON`);
-            const data = await res.json();
-            elevations.push(data.elevation !== undefined ? data.elevation : 0);
-        } catch (e) {
-            elevations.push(0);
-        }
-    }
-
-    if (elevationChart) { elevationChart.destroy(); }
-
-    const ctx = document.getElementById('elevationChart').getContext('2d');
-    elevationChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: t('標高 (m)', 'Elevation (m)'),
-                data: elevations,
-                borderColor: '#2196F3',
-                backgroundColor: 'rgba(33, 150, 243, 0.2)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'm' } },
-                x: { ticks: { font: { size: 10 } } }
-            }
-        }
-    });
-}
-
 // ===== クリア =====
 function clearMap() {
     markerGroup.clearLayers();
     if (routePolyline) { map.removeLayer(routePolyline); routePolyline = null; }
     document.getElementById('status').innerHTML = '';
-    const container = document.getElementById('chart-container');
-    if (container) container.style.display = 'none';
-    if (elevationChart) { elevationChart.destroy(); elevationChart = null; }
 }
 
 // ===== ルートプラン =====
@@ -580,57 +519,7 @@ async function generateRoute() {
     });
     routePolyline = L.polyline(best.map(s => [s.lat, s.lng]), { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
     map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
-
-    // 📈 AI生成されたルートでも高低差グラフを描画
-    updateElevationChart(best, best.map((s, i) => `${i+1}. ${lang === 'en' && s.name_en ? s.name_en : s.name}`));
 }
-
-// ===== 現在地追跡 =====
-let locationWatchId = null;
-let locationMarker = null;
-let locationCircle = null;
-const locateBtn = document.getElementById('locate-btn');
-
-const locationIcon = L.divIcon({
-    className: '',
-    html: '<div style="width:16px;height:16px;background:#2196F3;border:3px solid #fff;border-radius:50%;box-shadow:0 0 6px rgba(33,150,243,0.8);"></div>',
-    iconSize: [16, 16],
-    iconAnchor: [8, 8]
-});
-
-function updateLocationOnMap(pos) {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    const accuracy = pos.coords.accuracy;
-    if (!locationMarker) {
-        locationMarker = L.marker([lat, lng], { icon: locationIcon, zIndexOffset: 1000 })
-            .addTo(map).bindPopup(t('現在地', 'Your Location'));
-        locationCircle = L.circle([lat, lng], { radius: accuracy, color: '#2196F3', fillColor: '#2196F3', fillOpacity: 0.1, weight: 1 }).addTo(map);
-        map.setView([lat, lng], 14);
-    } else {
-        locationMarker.setLatLng([lat, lng]);
-        locationCircle.setLatLng([lat, lng]).setRadius(accuracy);
-    }
-}
-
-function startLocationTracking() {
-    if (!navigator.geolocation) { alert(t('位置情報非対応のブラウザです', 'Geolocation not supported')); return; }
-    navigator.geolocation.getCurrentPosition(pos => {
-        updateLocationOnMap(pos);
-        locationWatchId = navigator.geolocation.watchPosition(updateLocationOnMap, err => console.warn(err.message), {
-            enableHighAccuracy: true, maximumAge: 5000, timeout: 10000
-        });
-        locateBtn.classList.add('tracking');
-        locateBtn.title = t('現在地を追跡中', 'Tracking location');
-    }, err => console.warn(err.message), { enableHighAccuracy: true });
-}
-
-locateBtn.addEventListener('click', () => {
-    if (locationMarker) { map.setView(locationMarker.getLatLng(), 15); }
-    else { startLocationTracking(); }
-});
-
-window.addEventListener('load', () => { startLocationTracking(); });
 </script>
 </body>
 </html>
