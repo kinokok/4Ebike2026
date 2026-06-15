@@ -1,0 +1,28 @@
+[33m25d4774[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: checkout: moving from main to main
+[33m25d4774[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{1}: rebase (abort): returning to refs/heads/main
+[33m1ecd015[m HEAD@{2}: commit: main統合
+[33mb28e085[m HEAD@{3}: commit: main統合
+[33m0ddfec1[m HEAD@{4}: commit: main統合
+[33m34dd391[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{5}: pull origin main --rebase (start): checkout 34dd391f5eea6c1092da9bb5d6e52fff058b9264
+[33m25d4774[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{6}: commit: main統合
+[33m6ace164[m HEAD@{7}: rebase (abort): returning to refs/heads/main
+[33m6ace164[m HEAD@{8}: rebase (abort): returning to refs/heads/main
+[33m1590765[m HEAD@{9}: commit: main
+[33m6ace164[m HEAD@{10}: checkout: moving from 34dd391f5eea6c1092da9bb5d6e52fff058b9264 to main
+[33m34dd391[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{11}: pull --rebase origin main (start): checkout 34dd391f5eea6c1092da9bb5d6e52fff058b9264
+[33m6ace164[m HEAD@{12}: checkout: moving from main to main
+[33m6ace164[m HEAD@{13}: checkout: moving from main to main
+[33m6ace164[m HEAD@{14}: checkout: moving from main to main
+[33m6ace164[m HEAD@{15}: rebase (finish): returning to refs/heads/main
+[33m6ace164[m HEAD@{16}: rebase (finish): refs/heads/main onto a3b93fdfb061b712a3d42f72dde8b6b828fad6ec
+[33m6ace164[m HEAD@{17}: checkout: moving from tagengo_test to main
+[33md794372[m[33m ([m[1;32mtagengo_test[m[33m)[m HEAD@{18}: commit: Sync local changes into main
+[33m4a199cf[m HEAD@{19}: checkout: moving from tagengo_test to tagengo_test
+[33m4a199cf[m HEAD@{20}: checkout: moving from tagengo_test to tagengo_test
+[33m4a199cf[m HEAD@{21}: checkout: moving from 34dd391f5eea6c1092da9bb5d6e52fff058b9264 to tagengo_test
+[33m34dd391[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{22}: reset: moving to origin/main
+[33ma3b93fd[m[33m ([m[1;32mbackup/rebase-in-progress-202606151423[m[33m)[m HEAD@{23}: pull origin main --rebase (start): checkout a3b93fdfb061b712a3d42f72dde8b6b828fad6ec
+[33m6ace164[m HEAD@{24}: commit: 多言語化
+[33m4a199cf[m HEAD@{25}: checkout: moving from tagengo_test to main
+[33m4a199cf[m HEAD@{26}: checkout: moving from main to tagengo_test
+[33m4a199cf[m HEAD@{27}: clone: from https://github.com/kinokok/4Ebike2026.git
