@@ -1,0 +1,67 @@
+        /* 天気表示エリア（タイムライン＆グラデーション強化）
+        .weather-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            background: #fff;
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+        .weather-timeline {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .weather-arrow { font-size: 11px; color: #666; margin: 0 2px; }
+        .weather-info { font-weight: bold; color: #222; font-size: 12px; margin-left: 2px; }
+        */
+
+// ====== 【ここから】を変更（入れ替え） ======
+/*
+async function fetchMaizuruWeather() {
+    const weatherTextEl = document.getElementById('weather-text');
+    try {
+        const targetUrl = 'https://www.jma.go.jp/bosai/forecast/data/forecast/260000.json';
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+        
+        if (!res.ok) throw new Error();
+        const wrapper = await res.json();
+        const data = JSON.parse(wrapper.contents);
+
+        const timeSeries = data[0].timeSeries[0];
+        const northernAreaIndex = timeSeries.areas.findIndex(area => area.area.code === "260020");
+
+        if (northernAreaIndex !== -1) {
+            rawWeatherData = timeSeries.areas[northernAreaIndex].weathers[0].replace(/\s+/g, ' ');
+        }
+
+        if (data[0].timeSeries[1]) {
+            rawTimeSeriesData = data[0].timeSeries;
+        }
+
+        updateWeatherDisplay();
+
+    } catch (e) {
+        console.error(e);
+        if (weatherTextEl) weatherTextEl.textContent = 'Error (Retry)';
+    }
+}
+*/
+// ====== 【ここまで】を変更（入れ替え） ======
+
+        <div class="weather-wrap" id="weather-box" onclick="toggleWeatherDetail(event)" style="cursor: pointer; position: relative;" title="クリックして詳細予報を表示">
+            📍<span id="t-weather-city" style="font-weight: bold;" data-i18n-key="weather_city">舞鶴</span>:
+            <span class="weather-timeline" id="weather-timeline">⏳</span>
+            <span id="weather-text" class="weather-info">--</span>
+            <span class="expand-arrow" id="expand-arrow" style="font-size: 10px; color: #777; margin-left: 4px;">▼</span>
+
+            <div class="weather-detail-panel" id="weather-detail-panel" style="display: none; position: absolute; top: 38px; right: 0; width: 250px; background: white; border: 1px solid #ccc; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2000; padding: 10px; color: #333;">
+                <div class="weather-detail-title" id="t-detail-title" style="font-size: 12px; font-weight: bold; color: #555; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px; text-align: center;">今日〜明日の時間予報</div>
+                <div id="hourly-list"></div>
+            </div>
