@@ -106,13 +106,6 @@
         #locate-btn:hover { background: #f0f0f0; }
         #locate-btn.tracking { border-color: #2196F3; color: #2196F3; }
 
-        /* 👑 ここに貼り付けました！時間予報の1行ごとのスタイル設定 */
-        .hourly-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 4px; font-size: 13px; border-bottom: 1px solid #f9f9f9; color: #333; }
-        .hourly-row:last-child { border-bottom: none; }
-        .hourly-time { color: #666; font-weight: 500; }
-        .hourly-icon { font-size: 16px; width: 24px; text-align: center; }
-        .hourly-pop { color: #0288D1; font-weight: bold; font-size: 11px; width: 40px; text-align: right; }
-
         @media (max-width: 640px) {
             body { padding: 8px; }
             h1 { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -131,18 +124,11 @@
     <span id="t-title" data-i18n-key="title">🚲 舞鶴市 E-BikeProject</span>
     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
         <!-- 天気表示エリア（タイムライン進化版） -->
-        <div class="weather-wrap" id="weather-box" onclick="toggleWeatherDetail(event)" style="cursor: pointer; position: relative;" title="クリックして詳細予報を表示">
-    📍<span id="t-weather-city" style="font-weight: bold;" data-i18n-key="weather_city">舞鶴</span>:
-    <span class="weather-timeline" id="weather-timeline">⏳</span>
-    <span id="weather-text" class="weather-info">--</span>
-    <span class="expand-arrow" id="expand-arrow" style="font-size: 10px; color: #777; margin-left: 4px;">▼</span>
-
-    <div class="weather-detail-panel" id="weather-detail-panel" style="display: none; position: absolute; top: 38px; right: 0; width: 250px; background: white; border: 1px solid #ccc; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2000; padding: 10px; color: #333;">
-        <div class="weather-detail-title" id="t-detail-title" style="font-size: 12px; font-weight: bold; color: #555; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px; text-align: center;">今日〜明日の時間予報</div>
-        <div id="hourly-list">
-            </div>
-    </div>
-</div>
+        <div class="weather-wrap" id="weather-box">
+            📍<span id="t-weather-city" style="font-weight: bold;" data-i18n-key="weather_city">舞鶴</span>:
+            <span class="weather-timeline" id="weather-timeline">⏳</span>
+            <span id="weather-text" class="weather-info">--</span>
+        </div>
         <select id="lang-select" onchange="setLang(this.value)">
             <option value="ja">日本語</option>
             <option value="en">English</option>
@@ -345,78 +331,7 @@ function getGroupLabel(group) {
 }
 
 // ===== 天気時系列のビジュアル解析エンジン =====
-
-let rawTimeSeriesData = null; // 👑 時系列（降水確率）保存用
-let rawWeatherData = "";      // 👑 【これをついか！】天気の文字を保存する変数
-
-// 👑 パネルの開け閉めを行う関数
-function toggleWeatherDetail(event) {
-    event.stopPropagation();
-    const panel = document.getElementById('weather-detail-panel');
-    const arrow = document.getElementById('expand-arrow');
-    if (panel.style.display === 'block') {
-        panel.style.display = 'none';
-        arrow.textContent = '▼';
-    } else {
-        panel.style.display = 'block';
-        arrow.textContent = '▲';
-        renderHourlyForecast(); // 開いた時に中身を描画
-    }
-}
-
-// 👑 画面のどこをクリックしても閉じる親切機能
-document.addEventListener('click', () => {
-    if(document.getElementById('weather-detail-panel')) {
-        document.getElementById('weather-detail-panel').style.display = 'none';
-        document.getElementById('expand-arrow').textContent = '▼';
-    }
-});
-
-// 👑 時間ごとの予報を作って画面にはめ込む関数
-function renderHourlyForecast() {
-    const listEl = document.getElementById('hourly-list');
-    if (!rawTimeSeriesData) {
-        listEl.innerHTML = `<div style="font-size:12px;color:#999;text-align:center;padding:10px;">データを読み込み中...</div>`;
-        return;
-    }
-    listEl.innerHTML = '';
-
-    try {
-        // 気象庁データから京都府北部(260020)の降水確率(pops)を探す
-        const popSeries = rawTimeSeriesData.find(s => s.areas[0].pops);
-        if (!popSeries) throw new Error();
-
-        const areaData = popSeries.areas.find(a => a.area.code === "260020") || popSeries.areas[0];
-        const times = popSeries.timePeriod; 
-        const pops = areaData.pops;         
-
-        const currentSummaryIcon = getWeatherIcon(rawWeatherData);
-
-        times.forEach((timeStr, idx) => {
-            const date = new Date(timeStr);
-            const hour = date.getHours();
-            const dayText = date.getDate() === new Date().getDate() ? '今日' : '明日';
-            
-            // 降水確率によって簡易的にアイコンを分岐（サイクリスト用仕様）
-            let icon = currentSummaryIcon;
-            const popVal = parseInt(pops[idx]) || 0;
-            if (popVal >= 50) icon = '☔';
-            else if (popVal >= 30) icon = '☁️';
-            else if (rawWeatherData.includes('晴')) icon = '☀️';
-
-            const row = document.createElement('div');
-            row.className = 'hourly-row';
-            row.innerHTML = `
-                <span class="hourly-time">${dayText} ${hour}:00~</span>
-                <span class="hourly-icon">${icon}</span>
-                <span class="hourly-pop">💧 ${popVal}%</span>
-            `;
-            listEl.appendChild(row);
-        });
-    } catch (e) {
-        listEl.innerHTML = `<div style="font-size:11px;color:#d32f2f;padding:10px;">詳細データが取得できませんでした</div>`;
-    }
-}
+let rawWeatherData = null;
 
 // 天気テロップの語句変換テーブル（漢字・ひらがな両対応、時間表現含む）
 const weatherTermsMap = {
@@ -479,25 +394,15 @@ async function fetchMaizuruWeather() {
         if (!res.ok) throw new Error();
         const data = await res.json();
 
-        // 1. 今日・明日の天気テキストを取得
         const timeSeries = data[0].timeSeries[0];
         const northernAreaIndex = timeSeries.areas.findIndex(area => area.area.code === "260020");
 
         if (northernAreaIndex !== -1) {
-            // ★ここで天気文字を保存します
-            rawWeatherData = timeSeries.areas[northernAreaIndex].weathers[0].replace(/\s+/g, ' ');
+            // 気象庁の生の全角スペース区切りのテキスト
+            rawWeatherData = timeSeries.areas[northernAreaIndex].weathers[0].replace(/　/g, ' ');
+            updateWeatherDisplay();
         }
-
-        // 2. 時間ごとの降水確率データを取得（詳細パネル用）
-        if (data[0].timeSeries[1]) {
-            rawTimeSeriesData = data[0].timeSeries;
-        }
-
-        // 3. 画面の表示を更新する
-        updateWeatherDisplay();
-
     } catch (e) {
-        console.error(e);
         if (weatherTextEl) weatherTextEl.textContent = 'Error';
     }
 }
