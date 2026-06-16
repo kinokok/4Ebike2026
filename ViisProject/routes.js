@@ -96,28 +96,4 @@ const maizuruRoutesData = [
     "way_563042956"
   ]
 },
-{
-  "route_id": "route_05",
-  "category": "love",
-  "category_name_ja": "愛",
-  "category_name_en": "Love",
-  "category_name_ko": "러브",
-  "category_name_zh": "爱情",
-  "title_ja": "2人ならどこへでも行ける、愛に満ちたラブラブコース",
-  "title_en": "just the two of us, a love-filled lovey-dovey course",
-  "title_ko": "둘이서라면 어디든 갈 수 있는, 사랑이 가득한 러브러브 코스",
-  "title_zh": "两个人就能去任何地方，充满爱的甜蜜路线",
-  "description_ja": "",
-  "description_en": "",
-  "description_ko": "",
-  "description_zh": "",
-  "distance_km": 0,
-  "time_min": 0,
-  "difficulty": "love solve all",
-  "waypoints": [
-    "node_temp",
-    "temp",
-    "way_temp"
-  ]
-}
 ];
