@@ -347,6 +347,7 @@ function getGroupLabel(group) {
 // ===== 天気時系列のビジュアル解析エンジン =====
 
 let rawTimeSeriesData = null; // 👑 時系列（降水確率）保存用
+let rawWeatherData = "";      // 👑 【これをついか！】天気の文字を保存する変数
 
 // 👑 パネルの開け閉めを行う関数
 function toggleWeatherDetail(event) {
@@ -478,16 +479,25 @@ async function fetchMaizuruWeather() {
         if (!res.ok) throw new Error();
         const data = await res.json();
 
+        // 1. 今日・明日の天気テキストを取得
         const timeSeries = data[0].timeSeries[0];
         const northernAreaIndex = timeSeries.areas.findIndex(area => area.area.code === "260020");
 
         if (northernAreaIndex !== -1) {
-            // 気象庁の生の全角スペース区切りのテキスト
-            rawWeatherData = timeSeries.areas[northernAreaIndex].weathers[0].replace(/ /g, ' ');
-            rawTimeSeriesData = data[0].timeSeries; // 👑 この1行を追加！
-            updateWeatherDisplay();
+            // ★ここで天気文字を保存します
+            rawWeatherData = timeSeries.areas[northernAreaIndex].weathers[0].replace(/\s+/g, ' ');
         }
+
+        // 2. 時間ごとの降水確率データを取得（詳細パネル用）
+        if (data[0].timeSeries[1]) {
+            rawTimeSeriesData = data[0].timeSeries;
+        }
+
+        // 3. 画面の表示を更新する
+        updateWeatherDisplay();
+
     } catch (e) {
+        console.error(e);
         if (weatherTextEl) weatherTextEl.textContent = 'Error';
     }
 }
