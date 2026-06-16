@@ -575,6 +575,42 @@ function getIconForSpot(spot) {
     return (spot.group === 'sightseeing' || spot.group === 'activity') ? redIcon : blueIcon;
 }
 
+function getNumberedIcon(spot, num) {
+    const isRed = (spot.group === 'sightseeing' || spot.group === 'activity');
+    const iconUrl = isRed
+        ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
+        : 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png';
+    const badgeColor = isRed ? '#C62828' : '#1565C0';
+    return L.divIcon({
+        className: '',
+        html: `<div style="position:relative;width:25px;height:41px;">
+            <img src="${iconUrl}" style="width:25px;height:41px;">
+            <div style="
+                position:absolute;
+                top:5px; left:50%;
+                transform: translateX(-50%);
+                width:18px; height:18px;
+                background:#fff;
+                border-radius:50%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                box-shadow:0 0 2px rgba(0,0,0,0.5);
+            ">
+                <span style="
+                    font-size:13px;
+                    font-weight:bold;
+                    color:${badgeColor};
+                    line-height:1;
+                ">${num}</span>
+            </div>
+        </div>`,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34]
+    });
+}
+
 // ===== タブ =====
 function switchTab(tabId, btn) {
     clearMap();
@@ -685,7 +721,7 @@ async function drawRoute(routeId) {
             
             <div style="font-size:11px;color:#666;margin-top:8px">${getGroupLabel(spot.group)}</div>
         </div>`;
-        L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) }).bindPopup(popup).addTo(markerGroup);
+        L.marker([spot.lat, spot.lng], { icon: getNumberedIcon(spot, i + 1) }).bindPopup(popup).addTo(markerGroup);
     }
     if (!latlngs.length) return;
     routePolyline = L.polyline(latlngs, { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
@@ -877,7 +913,7 @@ async function generateRoute() {
             ${memo ? `<button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none'" style="margin-top:6px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">${translate('view_info')}</button><p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3">${memo}</p>` : ''}
             <div style="font-size:11px;color:#666;margin-top:8px">${getGroupLabel(s.group)}</div>
         </div>`;
-        L.marker([s.lat, s.lng], { icon: getIconForSpot(s) }).bindPopup(popup).addTo(markerGroup);
+        L.marker([s.lat, s.lng], { icon: getNumberedIcon(s, i + 1) }).bindPopup(popup).addTo(markerGroup);
     });
     routePolyline = L.polyline(best.map(s => [s.lat, s.lng]), { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
     map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
