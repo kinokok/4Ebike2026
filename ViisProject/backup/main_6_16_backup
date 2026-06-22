@@ -11,6 +11,29 @@
         h1 { font-size: 18px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px; }
         #map { width: 100%; height: 50vh; margin-top: 10px; border: 1px solid #ccc; }
 
+        /* 天気表示エリア（タイムライン＆グラデーション強化） */
+        .weather-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            background: #fff;
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+        }
+        .weather-timeline {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .weather-arrow { font-size: 11px; color: #666; margin: 0 2px; }
+        .weather-info { font-weight: bold; color: #222; font-size: 12px; margin-left: 2px; }
+
         /* 言語切り替え */
         #lang-select { font-size: 12px; padding: 6px 10px; cursor: pointer; border: 1px solid #2196F3; border-radius: 4px; background: #fff; color: #2196F3; }
         #lang-select:focus { outline: none; }
@@ -34,9 +57,30 @@
         .route-meta { font-size: 12px; color: #666; margin-bottom: 5px; }
 
         /* ルートジェネレーター */
+        .gen-section { margin-bottom: 12px; }
+        .gen-section label { font-size: 13px; font-weight: bold; color: #444; display: block; margin-bottom: 4px; }
+        .pad-wrap { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+        .pad-area { width: 100%; height: 180px; position: relative; cursor: crosshair; border: 1px solid #bbb; border-radius: 4px; background: #fff; overflow: hidden; user-select: none; }
+        .pad-axis-h { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #ddd; }
+        .pad-axis-v { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #ddd; }
+        .pad-ax { position: absolute; font-size: 10px; color: #aaa; }
+        .pad-dot { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: #2196F3; border: 3px solid #1565C0; transform: translate(-50%, -50%); cursor: grab; transition: box-shadow 0.1s; }
+        .pad-dot:active { cursor: grabbing; box-shadow: 0 0 0 6px rgba(33,150,243,0.2); }
+        .quad-hint { position: absolute; font-size: 9px; color: #bbb; pointer-events: none; }
+        .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .slider-box { background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; padding: 8px; }
+        .slider-box label { font-size: 11px; color: #666; display: block; margin-bottom: 4px; }
+        .slider-box input[type=range] { width: 100%; }
+        .slider-val { font-size: 13px; font-weight: bold; color: #333; text-align: right; }
         .gen-btn { width: 100%; padding: 10px; font-size: 14px; font-weight: bold; cursor: pointer; background: #2196F3; color: #fff; border: none; border-radius: 4px; margin-bottom: 10px; }
+        .gen-result { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+        .gen-result h4 { margin: 0 0 4px 0; font-size: 14px; color: #222; }
+        .gen-meta { font-size: 12px; color: #666; margin-bottom: 6px; }
+        .spot-chips { margin-bottom: 8px; }
+        .chip { display: inline-block; background: #E3F2FD; border: 1px solid #90CAF9; border-radius: 12px; padding: 2px 8px; font-size: 11px; margin: 2px; color: #1565C0; }
         .maps-link { display: inline-block; background: #4CAF50; color: #fff; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: bold; }
         .maps-link:hover { background: #388E3C; }
+        .regen-btn { margin-left: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; background: #fff; border: 1px solid #2196F3; color: #2196F3; border-radius: 4px; }
 
         #status { margin-top: 8px; font-size: 13px; font-weight: bold; }
 
@@ -62,13 +106,20 @@
         #locate-btn:hover { background: #f0f0f0; }
         #locate-btn.tracking { border-color: #2196F3; color: #2196F3; }
 
+        /* 時間予報の1行ごとのスタイル設定 */
+        .hourly-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 4px; font-size: 13px; border-bottom: 1px solid #f9f9f9; color: #333; }
+        .hourly-row:last-child { border-bottom: none; }
+        .hourly-time { color: #666; font-weight: 500; }
+        .hourly-icon { font-size: 16px; width: 24px; text-align: center; }
+        .hourly-pop { color: #0288D1; font-weight: bold; font-size: 11px; width: 40px; text-align: right; }
+
         @media (max-width: 640px) {
             body { padding: 8px; }
             h1 { flex-direction: column; align-items: flex-start; gap: 8px; }
             .tab-buttons { flex-wrap: wrap; }
             .tab-btn { flex: 1 1 100%; text-align: left; }
-            .route-item, .tab-content { padding: 0; }
-            .action-btn, .clear-btn, .gen-btn, .maps-link { width: 100%; }
+            .gen-section, .route-item, .tab-content { padding: 0; }
+            .action-btn, .clear-btn, .gen-btn, .regen-btn, .maps-link { width: 100%; }
             #map { height: 45vh; }
             #locate-btn { bottom: 70px; right: 8px; }
         }
@@ -78,12 +129,25 @@
 
 <h1>
     <span id="t-title" data-i18n-key="title">🚲 舞鶴市 E-BikeProject</span>
-    <select id="lang-select" onchange="setLang(this.value)">
-        <option value="ja">日本語</option>
-        <option value="en">English</option>
-        <option value="ko">한국어</option>
-        <option value="zh">中文</option>
-    </select>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <div class="weather-wrap" id="weather-box" onclick="toggleWeatherDetail(event)" style="cursor: pointer; position: relative;" title="クリックして詳細予報を表示">
+            📍<span id="t-weather-city" style="font-weight: bold;" data-i18n-key="weather_city">舞鶴</span>:
+            <span class="weather-timeline" id="weather-timeline">⏳</span>
+            <span id="weather-text" class="weather-info">--</span>
+            <span class="expand-arrow" id="expand-arrow" style="font-size: 10px; color: #777; margin-left: 4px;">▼</span>
+
+            <div class="weather-detail-panel" id="weather-detail-panel" style="display: none; position: absolute; top: 38px; right: 0; width: 250px; background: white; border: 1px solid #ccc; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 2000; padding: 10px; color: #333;">
+                <div class="weather-detail-title" id="t-detail-title" style="font-size: 12px; font-weight: bold; color: #555; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 6px; text-align: center;">今日〜明日の時間予報</div>
+                <div id="hourly-list"></div>
+            </div>
+        </div>
+        <select id="lang-select" onchange="setLang(this.value)">
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+            <option value="ko">한국어</option>
+            <option value="zh">中文</option>
+        </select>
+    </div>
 </h1>
 
 <div class="tab-container">
@@ -136,7 +200,7 @@
             <span id="spots-val" style="font-weight:bold">3</span> <span id="t-stops-unit" data-i18n-key="stops">箇所</span>
         </div>
 
-        <button class="gen-btn" id="gen-btn" onclick="generateRoute()" data-i18n-key="route_gen">ルートを生成する</button>
+        <button class="gen-btn" id="gen-btn" onclick="generateRoute()" data-i18n-key="route_gen" style="width:100%;padding:10px;font-size:14px;font-weight:bold;cursor:pointer;background:#2196F3;color:#fff;border:none;border-radius:4px;margin-bottom:10px">ルートを生成する</button>
         <div id="gen-result" style="display:none;background:#f9f9f9;border:1px solid #ddd;border-radius:6px;padding:10px"></div>
     </div>
 </div>
@@ -186,7 +250,7 @@ const translations = {
     min: { ja:'分', en:'min', ko:'분', zh:'分钟' },
     level: { ja:'難易度', en:'Level', ko:'난이도', zh:'难度' },
     show_on_map: { ja:'地図にルートを表示', en:'Show on Map', ko:'지도に表示', zh:'在地图上显示路线' },
-    view_info: { ja:'📖 説明を見る', en:'📖 View Info', ko:'📖 설명 보기', zh:'📖 查看说명' },
+    view_info: { ja:'📖 説明を見る', en:'📖 View Info', ko:'📖 설명 보기', zh:'📖 查看说明' },
     navigate: { ja:'スマホでナビ開始', en:'Navigate', ko:'내비게이션 시작', zh:'开始导航' },
     already_added: { ja:'すでに追加済みです', en:'Already added', ko:'이미 추가됨', zh:'已添加' },
     calculating: { ja:'計算中...', en:'Calculating...', ko:'계산 중...', zh:'计算中...' },
@@ -199,6 +263,7 @@ const translations = {
     google_maps_nav: { ja:'Google マップでナビ開始', en:'Open Google Maps', ko:'Google 지도에서 내비게이션 시작', zh:'在 Google 地图中导航' },
     route_summary: { ja:'約 {dist} km ／ 目安 {time} 分 ／ {count} スポット', en:'Approx. {dist} km / ~{time} min / {count} spots', ko:'약 {dist} km / 약 {time} 분 / {count} 스팟', zh:'约 {dist} 公里 / 预计 {time} 分钟 / {count} 个景点' },
     route_added: { ja:'ルートに追加', en:'Add to Route', ko:'경로에 추가', zh:'添加到路线' },
+    weather_city: { ja:'舞鶴', en:'Maizuru', ko:'마이즈루', zh:'舞鹤' },
     street_view: { ja:'ストリートビュー', en:'Street View', ko:'스트리트 뷰', zh:'街景' }
 };
 
@@ -259,6 +324,7 @@ function applyLang() {
     renderRouteList();
     renderRoutePlan();
     if (currentRouteId) drawRoute(currentRouteId);
+    updateWeatherDisplay();
 }
 
 function getSpotField(spot, base) {
@@ -271,6 +337,198 @@ function getRouteField(route, base) {
 
 function getGroupLabel(group) {
     return translations[group] ? translate(group) : group || '';
+}
+
+// ===== 天気時系列のビジュアル解析エンジン =====
+let rawTimeSeriesData = null; 
+let rawWeatherData = "";      
+
+function toggleWeatherDetail(event) {
+    event.stopPropagation();
+    const panel = document.getElementById('weather-detail-panel');
+    const arrow = document.getElementById('expand-arrow');
+    if (panel.style.display === 'block') {
+        panel.style.display = 'none';
+        arrow.textContent = '▼';
+    } else {
+        panel.style.display = 'block';
+        arrow.textContent = '▲';
+        renderHourlyForecast(); 
+    }
+}
+
+document.addEventListener('click', () => {
+    if(document.getElementById('weather-detail-panel')) {
+        document.getElementById('weather-detail-panel').style.display = 'none';
+        document.getElementById('expand-arrow').textContent = '▼';
+    }
+});
+
+function renderHourlyForecast() {
+    const listEl = document.getElementById('hourly-list');
+    if (!rawTimeSeriesData) {
+        listEl.innerHTML = `<div style="font-size:12px;color:#999;text-align:center;padding:10px;">データを読み込み中...</div>`;
+        return;
+    }
+    listEl.innerHTML = '';
+
+    try {
+        const popSeries = rawTimeSeriesData.find(s => s.areas[0].pops);
+        if (!popSeries) throw new Error();
+
+        const areaData = popSeries.areas.find(a => a.area.code === "260020") || popSeries.areas[0];
+        const times = popSeries.timePeriod; 
+        const pops = areaData.pops;         
+
+        const currentSummaryIcon = getWeatherIcon(rawWeatherData);
+
+        times.forEach((timeStr, idx) => {
+            const date = new Date(timeStr);
+            const hour = date.getHours();
+            const dayText = date.getDate() === new Date().getDate() ? '今日' : '明日';
+            
+            let icon = currentSummaryIcon;
+            const popVal = parseInt(pops[idx]) || 0;
+            if (popVal >= 50) icon = '☔';
+            else if (popVal >= 30) icon = '☁️';
+            else if (rawWeatherData.includes('晴')) icon = '☀️';
+
+            const row = document.createElement('div');
+            row.className = 'hourly-row';
+            row.innerHTML = `
+                <span class="hourly-time">${dayText} ${hour}:00~</span>
+                <span class="hourly-icon">${icon}</span>
+                <span class="hourly-pop">💧 ${popVal}%</span>
+            `;
+            listEl.appendChild(row);
+        });
+    } catch (e) {
+        listEl.innerHTML = `<div style="font-size:11px;color:#d32f2f;padding:10px;">詳細データが取得できませんでした</div>`;
+    }
+}
+
+const weatherTermsMap = {
+    en: [
+        [/晴れ|晴/g, 'Clear'], [/くもり|曇り|曇/g, 'Cloudy'], [/雨/g, 'Rain'], [/雪/g, 'Snow'],
+        [/雷/g, 'Thunder'],
+        [/のち|後/g, '➔'], [/時々/g, '/'], [/一時/g, ' temporary'],
+        [/朝/g, 'morning'], [/昼前/g, 'before noon'], [/昼過ぎ/g, 'afternoon'], [/夕方/g, 'evening'], [/夜/g, 'night'], [/明け方/g, 'dawn'],
+        [/から/g, ' from '], [/まで/g, ' until '], [/と/g, ' and '],
+    ],
+    ko: [
+        [/晴れ|晴/g, '맑음'], [/くもり|曇り|曇/g, '흐림'], [/雨/g, '비'], [/雪/g, '눈'],
+        [/雷/g, '뇌우'],
+        [/のち|後/g, '➔'], [/時々/g, '/때때로'], [/一時/g, ' 한때'],
+        [/朝/g, '아침'], [/昼前/g, '오전'], [/昼過ぎ/g, '오후'], [/夕方/g, '저녁'], [/夜/g, '밤'], [/明け方/g, '새벽'],
+        [/から/g, ' 부터 '], [/まで/g, ' 까지 '], [/と/g, ' 와 '],
+    ],
+    zh: [
+        [/晴れ|晴/g, '晴'], [/くもり|曇り|曇/g, '多云'], [/雨/g, '雨'], [/雪/g, '雪'],
+        [/雷/g, '雷'],
+        [/のち|後/g, '➔'], [/時々/g, '/有时'], [/一時/g, ' 短时'],
+        [/朝/g, '早上'], [/昼前/g, '上午'], [/昼過ぎ/g, '下午'], [/夕方/g, '傍晚'], [/夜/g, '夜间'], [/明け方/g, '凌晨'],
+        [/から/g, ' 起 '], [/まで/g, ' 至 '], [/と/g, ' 和 '],
+    ]
+};
+
+function translateWeather(telop) {
+    if (lang === 'ja') return telop;
+    const rules = weatherTermsMap[lang];
+    if (!rules) return telop;
+    let result = telop;
+    rules.forEach(([pattern, replacement]) => { result = result.replace(pattern, replacement); });
+    return result.replace(/\s+/g, ' ').trim();
+}
+
+function getWeatherIcon(text) {
+    if (text.includes('雷')) return '⚡';
+    if (text.includes('雨')) return '☔';
+    if (text.includes('雪')) return '❄️';
+    if (text.includes('くもり') || text.includes('曇')) return '☁️';
+    if (text.includes('晴')) return '☀️';
+    return '🌈';
+}
+
+function getWeatherColor(text) {
+    if (text.includes('雨')) return '#EDE7F6'; 
+    if (text.includes('雪')) return '#ECEFF1'; 
+    if (text.includes('くもり') || text.includes('曇')) return '#E0E0E0'; 
+    if (text.includes('晴')) return '#E3F2FD'; 
+    return '#FFF3E0';
+}
+
+// ====== 【ここから】を変更（入れ替え） ======
+async function fetchMaizuruWeather() {
+    const weatherTextEl = document.getElementById('weather-text');
+    try {
+        const targetUrl = 'https://www.jma.go.jp/bosai/forecast/data/forecast/260000.json';
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+        
+        if (!res.ok) throw new Error();
+        const wrapper = await res.json();
+        const data = JSON.parse(wrapper.contents);
+
+        const timeSeries = data[0].timeSeries[0];
+        const northernAreaIndex = timeSeries.areas.findIndex(area => area.area.code === "260020");
+
+        if (northernAreaIndex !== -1) {
+            rawWeatherData = timeSeries.areas[northernAreaIndex].weathers[0].replace(/\s+/g, ' ');
+        }
+
+        if (data[0].timeSeries[1]) {
+            rawTimeSeriesData = data[0].timeSeries;
+        }
+
+        updateWeatherDisplay();
+
+    } catch (e) {
+        console.error(e);
+        if (weatherTextEl) weatherTextEl.textContent = 'Error (Retry)';
+    }
+}
+// ====== 【ここまで】を変更（入れ替え） ======
+
+function updateWeatherDisplay() {
+    const weatherTextEl = document.getElementById('weather-text');
+    const weatherTimelineEl = document.getElementById('weather-timeline');
+    const weatherBoxEl = document.getElementById('weather-box');
+
+    if (!rawWeatherData || !weatherTextEl) return;
+
+    weatherTextEl.textContent = `(${translateWeather(rawWeatherData)})`;
+
+    let cleanText = rawWeatherData.trim();
+    let htmlTimeline = "";
+
+    if (cleanText.includes('後') || cleanText.includes('のち')) {
+        const parts = cleanText.split(/後|のち/);
+        const icon1 = getWeatherIcon(parts[0]);
+        const icon2 = getWeatherIcon(parts[1]);
+        const col1 = getWeatherColor(parts[0]);
+        const col2 = getWeatherColor(parts[1]);
+
+        htmlTimeline = `${icon1} <span class="weather-arrow">➔</span> ${icon2}`;
+        weatherBoxEl.style.background = `linear-gradient(90deg, ${col1} 0%, ${col2} 100%)`;
+        weatherBoxEl.style.borderColor = '#B0BEC5';
+
+    } else if (cleanText.includes('時々') || cleanText.includes('一時')) {
+        const parts = cleanText.split(/時々|一時/);
+        const icon1 = getWeatherIcon(parts[0]);
+        const icon2 = getWeatherIcon(parts[1]);
+        const col = getWeatherColor(parts[0]);
+
+        htmlTimeline = `${icon1}<span style="font-size:11px;margin-left:2px">(${icon2})</span>`;
+        weatherBoxEl.style.background = col;
+        weatherBoxEl.style.borderColor = '#CFD8DC';
+    } else {
+        const icon = getWeatherIcon(cleanText);
+        const col = getWeatherColor(cleanText);
+        htmlTimeline = icon;
+        weatherBoxEl.style.background = col;
+        weatherBoxEl.style.borderColor = '#90CAF9';
+    }
+
+    weatherTimelineEl.innerHTML = htmlTimeline;
 }
 
 // ===== DB・地図初期化 =====
@@ -295,6 +553,7 @@ let currentRouteId = null;
 
 window.addEventListener('load', async () => {
     const statusEl = document.getElementById('status');
+    fetchMaizuruWeather();
     try {
         if (typeof maizuruSpotsData === 'undefined' || typeof maizuruRoutesData === 'undefined') {
             throw new Error(translate('data_error'));
@@ -310,7 +569,6 @@ window.addEventListener('load', async () => {
         statusEl.innerHTML = `❌ ${e.message}`;
         statusEl.style.color = 'red';
     }
-    startLocationTracking();
 });
 
 function getIconForSpot(spot) {
@@ -327,29 +585,30 @@ function getNumberedIcon(spot, num) {
         className: '',
         html: `<div style="position:relative;width:25px;height:41px;">
             <img src="${iconUrl}" style="width:25px;height:41px;">
-            <div style="position:absolute;top:5px;left:50%;transform:translateX(-50%);width:18px;height:18px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 2px rgba(0,0,0,0.5);">
-                <span style="font-size:13px;font-weight:bold;color:${badgeColor};line-height:1;">${num}</span>
+            <div style="
+                position:absolute;
+                top:5px; left:50%;
+                transform: translateX(-50%);
+                width:18px; height:18px;
+                background:#fff;
+                border-radius:50%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                box-shadow:0 0 2px rgba(0,0,0,0.5);
+            ">
+                <span style="
+                    font-size:13px;
+                    font-weight:bold;
+                    color:${badgeColor};
+                    line-height:1;
+                ">${num}</span>
             </div>
         </div>`,
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34]
     });
-}
-
-// ===== Google Maps URL生成 =====
-function buildMapsUrl(coordsArray) {
-    // coordsArray: ["lat,lng", "lat,lng", ...]
-    const points = coordsArray.map(coord => {
-        const [lat, lng] = coord.split(',');
-        return `${parseFloat(lat).toFixed(7)},${parseFloat(lng).toFixed(7)}`;
-    });
-    return `https://www.google.com/maps/dir/${points.join('/')}/@35.4751,135.3338,12z/data=!3m1!4b1!4m2!4m1!3e1`;
-}
-
-function openMaps(url) {
-    const w = window.open('about:blank', '_blank');
-    setTimeout(function() { w.location.href = url; }, 100);
 }
 
 // ===== タブ =====
@@ -376,7 +635,8 @@ async function searchFromLocalDB() {
     };
     let results = all.filter(s => {
         if (!s.lat || !s.lng) return false;
-        return bounds.contains(L.latLng(s.lat, s.lng)) && matchSpotKeyword(s, keyword);
+        const inScreen = bounds.contains(L.latLng(s.lat, s.lng));
+        return inScreen && matchSpotKeyword(s, keyword);
     });
     results.forEach(spot => {
         const nameDisplay = getSpotField(spot, 'name');
@@ -386,17 +646,19 @@ async function searchFromLocalDB() {
         const popup = `<div style="text-align:center;width:180px">
             <b style="font-size:14px">${nameDisplay}</b><br>
             ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            <a href="${streetViewUrl}" target="_blank" style="display:block;margin-top:6px;padding:4px 0;font-size:11px;background:#e67e22;color:white;text-decoration:none;border-radius:3px;font-weight:bold;">📷 ${translate('street_view')}</a>
+            <a href="${streetViewUrl}" target="_blank" style="display:block; margin-top:6px; padding:4px 0; font-size:11px; background:#e67e22; color:white; text-decoration:none; border-radius:3px; font-weight:bold;">📷 ${translate('street_view')}</a>
             ${currentMemo ? `
-                <button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none';"
-                        style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%;">
+                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
+                        style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
                     ${translate('view_info')}
                 </button>
-                <p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3;">
+                <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
                     ${currentMemo}
                 </p>
             ` : ''}
+            
             <button onclick="addToRoutePlan('${spot.id}')" style="margin-top:6px;padding:4px 8px;font-size:11px;background:#E91E63;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">${translate('route_added')}</button>
+            
             <div style="font-size:11px;color:#666;margin-top:8px">${getGroupLabel(spot.group)}</div>
         </div>`;
         const m = L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) });
@@ -440,19 +702,23 @@ async function drawRoute(routeId) {
         const currentMemo = getSpotField(spot, 'memo');
         const popupId = `route-memo-${spot.id}-${i}`;
         const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${spot.lat},${spot.lng}`;
+
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${nameDisplay}</b><br>
             ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            <a href="${streetViewUrl}" target="_blank" style="display:block;margin-top:6px;padding:4px 0;font-size:11px;background:#e67e22;color:white;text-decoration:none;border-radius:3px;font-weight:bold;">📷 ${translate('street_view')}</a>
+            <a href="${streetViewUrl}" target="_blank" style="display:block; margin-top:6px; padding:4px 0; font-size:11px; background:#e67e22; color:white; text-decoration:none; border-radius:3px; font-weight:bold;">
+            📷 ${translate('street_view')}
+            </a>
             ${currentMemo ? `
-                <button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none';"
-                        style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%;">
+                <button onclick="document.getElementById('${popupId}').style.display='block'; this.style.display='none';" 
+                        style="margin-top:8px; padding:4px 8px; font-size:11px; background:#2196F3; color:white; border:none; border-radius:3px; cursor:pointer; width:100%;">
                     ${translate('view_info')}
                 </button>
-                <p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3;">
+                <p id="${popupId}" style="display:none; font-size:11px; color:#555; text-align:left; margin:8px 0 0 0; background:#f9f9f9; padding:6px; border-radius:3px; border-left:3px solid #2196F3;">
                     ${currentMemo}
                 </p>
             ` : ''}
+            
             <div style="font-size:11px;color:#666;margin-top:8px">${getGroupLabel(spot.group)}</div>
         </div>`;
         L.marker([spot.lat, spot.lng], { icon: getNumberedIcon(spot, i + 1) }).bindPopup(popup).addTo(markerGroup);
@@ -460,15 +726,16 @@ async function drawRoute(routeId) {
     if (!latlngs.length) return;
     routePolyline = L.polyline(latlngs, { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
     map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
-
-    const url = buildMapsUrl(waypoints);
-    window._mapsUrl = url;
+    const wp = [...waypoints];
+    const origin = wp.shift(), dest = wp.pop() || origin, wpStr = wp.join('|');
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`;
+    if (wpStr) url += `&waypoints=${wpStr}`;
     const routeTitle = getRouteField(route, 'title') || route.title;
     document.getElementById('status').innerHTML = `
         ✅ ${routeTitle}
-        <button onclick="openMaps(window._mapsUrl)" style="background:#4CAF50;color:white;padding:4px 8px;border:none;border-radius:3px;margin-left:10px;cursor:pointer;font-size:13px">
+        <a href="${url}" target="_blank" style="background:#4CAF50;color:white;padding:4px 8px;text-decoration:none;border-radius:3px;margin-left:10px">
             ${translate('navigate')}
-        </button>`;
+        </a>`;
 }
 
 // ===== クリア =====
@@ -591,7 +858,10 @@ async function generateRoute() {
     const timeMin = Math.round(totalDist / 12 * 60 + best.length * 15);
 
     const wpCoords = best.map(s => `${s.lat},${s.lng}`);
-    const mapsUrl = buildMapsUrl(wpCoords);
+    const origin = wpCoords[0], dest = wpCoords[wpCoords.length-1];
+    const midWp = wpCoords.slice(1,-1).join('|');
+    let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=bicycling`;
+    if (midWp) mapsUrl += `&waypoints=${midWp}`;
 
     const chips = best.map((s, i) => {
         const isFixed = routePlanSpots.find(f => f.id === s.id);
@@ -618,12 +888,11 @@ async function generateRoute() {
         </div>`;
     });
 
-    window._genMapsUrl = mapsUrl;
     resultEl.innerHTML = `
         <div style="font-size:12px;color:#666;margin-bottom:8px">${translate('route_summary', { dist: totalDist.toFixed(1), time: timeMin, count: best.length })}</div>
         <div style="margin-bottom:10px">${chips}</div>
         <div style="margin-bottom:12px">${spotsCardsHtml}</div>
-        <button onclick="openMaps(window._genMapsUrl)" style="display:block;width:100%;text-align:center;background:#4CAF50;color:#fff;padding:10px;border-radius:4px;border:none;font-size:14px;font-weight:bold;cursor:pointer">${translate('google_maps_nav')}</button>
+        <a href="${mapsUrl}" target="_blank" style="display:block;text-align:center;background:#4CAF50;color:#fff;padding:10px;border-radius:4px;text-decoration:none;font-size:14px;font-weight:bold">${translate('google_maps_nav')}</a>
     `;
 
     genBtn.textContent = '🔄 ' + translate('regenerate');
@@ -638,7 +907,9 @@ async function generateRoute() {
         const popup = `<div style="text-align:center;width:180px">
             <b>${i+1}. ${name}${isFixed ? ' 📌' : ''}</b><br>
             ${s.image ? `<img src="${s.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-            <a href="${streetViewUrl}" target="_blank" style="display:block;margin-top:6px;padding:4px 0;font-size:11px;background:#e67e22;color:white;text-decoration:none;border-radius:3px;font-weight:bold;">📷 ${translate('street_view')}</a>
+        <a href="${streetViewUrl}" target="_blank" style="display:block; margin-top:6px; padding:4px 0; font-size:11px; background:#e67e22; color:white; text-decoration:none; border-radius:3px; font-weight:bold;">
+        📷 ${translate('street_view')}
+        </a>
             ${memo ? `<button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none'" style="margin-top:6px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">${translate('view_info')}</button><p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3">${memo}</p>` : ''}
             <div style="font-size:11px;color:#666;margin-top:8px">${getGroupLabel(s.group)}</div>
         </div>`;
@@ -692,6 +963,8 @@ locateBtn.addEventListener('click', () => {
     if (locationMarker) { map.setView(locationMarker.getLatLng(), 15); }
     else { startLocationTracking(); }
 });
+
+window.addEventListener('load', () => { startLocationTracking(); });
 </script>
 </body>
 </html>
