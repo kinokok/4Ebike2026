@@ -262,11 +262,11 @@ function applyLang() {
 }
 
 function getSpotField(spot, base) {
-    return spot[`${base}_${lang}`] || spot[`${base}_en`] || spot[base] || '';
+    return spot[`${base}_${lang}`] || spot[base] || spot[`${base}_en`] || '';
 }
 
 function getRouteField(route, base) {
-    return route[`${base}_${lang}`] || route[`${base}_en`] || route[base] || '';
+    return route[`${base}_${lang}`] || route[base] || route[`${base}_en`] || '';
 }
 
 function getGroupLabel(group) {

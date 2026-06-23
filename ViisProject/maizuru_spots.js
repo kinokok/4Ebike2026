@@ -1,7 +1,7 @@
 const maizuruSpotsData = [
   {
     "id": "node_850377050",
-    "name_jp": "五老山展望台",
+    "name": "五老山展望台",
     "name_en": "Gorozan Observatory",
     "name_ko": "고로잔 전망대",
     "name_zh": "五老山展望台",
