@@ -14,7 +14,6 @@ const maizuruSpotsData = [
     "memo_en": "Gorozan Observatory sits on Mt. Gorozan and offers panoramic views of Maizuru Bay, especially beautiful at sunset.",
     "memo_ko": "고로잔 전망대는 고로잔 산에 위치하며 마이즈루 만과 주변 풍경을 한눈에 볼 수 있습니다. 특히 석양이 아름답습니다.",
     "memo_zh": "五老山展望台位于五老山，能一览舞鹤湾及周边美景，尤其在夕阳时分格外迷人。",
-    "is_photo_spot": true
     
   },
   {
