@@ -461,7 +461,10 @@ async function drawRoute(routeId) {
     routePolyline = L.polyline(latlngs, { color:'#E91E63', weight:5, opacity:0.8 }).addTo(map);
     map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
 
-    const url = buildMapsUrl(waypoints);
+    const origin = locationMarker
+    ? [`${locationMarker.getLatLng().lat},${locationMarker.getLatLng().lng}`]
+    : [];
+    const url = buildMapsUrl([...origin, ...waypoints]);
     window._mapsUrl = url;
     const routeTitle = getRouteField(route, 'title') || route.title;
     document.getElementById('status').innerHTML = `
