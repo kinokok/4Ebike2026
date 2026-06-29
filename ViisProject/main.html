@@ -113,6 +113,13 @@
 
     <div id="tab-routes" class="tab-content">
         <div id="route-list"><span id="t-loading" data-i18n-key="loading">データを読み込んでいます...</span></div>
+        <div style="margin-top: 25px; border-top: 2px dashed #ddd; padding-top: 15px;">
+            <h3 style="font-size: 15px; margin: 0 0 10px 0; color: #FF8F00; display: flex; align-items: center; gap: 5px;">
+                📸 <span id="t-photo-title">おすすめ撮影スポット</span>
+            </h3>
+            <div id="photo-spot-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                </div>
+        </div>
     </div>
 
     <div id="tab-gen" class="tab-content">
@@ -199,7 +206,9 @@ const translations = {
     google_maps_nav: { ja:'Google マップでナビ開始', en:'Open Google Maps', ko:'Google 지도에서 내비게이션 시작', zh:'在 Google 地图中导航' },
     route_summary: { ja:'約 {dist} km ／ 目安 {time} 分 ／ {count} スポット', en:'Approx. {dist} km / ~{time} min / {count} spots', ko:'약 {dist} km / 약 {time} 분 / {count} 스팟', zh:'约 {dist} 公里 / 预计 {time} 分钟 / {count} 个景点' },
     route_added: { ja:'ルートに追加', en:'Add to Route', ko:'경로에 추가', zh:'添加到路线' },
-    street_view: { ja:'ストリートビュー', en:'Street View', ko:'스트리트 뷰', zh:'街景' }
+    street_view: { ja:'ストリートビュー', en:'Street View', ko:'스트리트 뷰', zh:'街景' },
+    photo_spot_title: { ja:'📸 おすすめ撮影スポット', en:'📸 Recommended Photo Spot', ko:'📸 추천 촬영 스팟', zh:'📸 推荐拍照点' },
+    photo_spot_badge: { ja:'絶景ポイント', en:'Scenic Point', ko:'절경 포인트', zh:'绝佳景点' }
 };
 
 function translate(key, params = {}) {
@@ -258,15 +267,18 @@ function applyLang() {
     updateSelectLabels();
     renderRouteList();
     renderRoutePlan();
+    renderRouteList();
+    renderRoutePlan();
+    renderPhotoSpotList();
     if (currentRouteId) drawRoute(currentRouteId);
 }
 
 function getSpotField(spot, base) {
-    return spot[`${base}_${lang}`] || spot[base] || spot[`${base}_en`] || '';
+    return spot[`${base}_${lang}`] || spot[`${base}_en`] || spot[base] || '';
 }
 
 function getRouteField(route, base) {
-    return route[`${base}_${lang}`] || route[base] || route[`${base}_en`] || '';
+    return route[`${base}_${lang}`] || route[`${base}_en`] || route[base] || '';
 }
 
 function getGroupLabel(group) {
@@ -385,6 +397,21 @@ async function searchFromLocalDB() {
         const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${spot.lat},${spot.lng}`;
         const popup = `<div style="text-align:center;width:180px">
             <b style="font-size:14px">${nameDisplay}</b><br>
+            ${spot.is_photo_spot ? `<div style="background:linear-gradient(135deg,#FFD54F,#FFB300,#FF8F00);color:#fff;border-radius:6px;padding:6px;font-size:12px;font-weight:bold;margin-bottom:8px;box-shadow:0 3px 6px rgba(0,0,0,0.15);">${translate('photo_spot_title')}<br><span style="font-size:10px;opacity:0.9;">${translate('photo_spot_badge')}</span></div>` : ''}
+            ${spot.is_photo_spot ? `
+            <div style="background:linear-gradient(135deg,#FFD54F 0%,#FFB300 50%,#FF8F00 100%);color:#fff;border-radius:8px;padding:8px;font-size:12px;font-weight:bold;margin-bottom:10px;text-align:center;box-shadow:0 4px 10px rgba(255,143,0,0.4);position:relative;overflow:hidden;animation:pulseGlow 2s infinite alternate;border:none;">
+                <span style="position:absolute;top:2px;left:5px;opacity:0.6;font-size:10px;">★</span>
+                <span style="position:absolute;bottom:2px;right:5px;opacity:0.6;font-size:10px;">★</span>
+                <div style="font-size:13px;text-shadow:1px 1px 2px rgba(0,0,0,0.2);letter-spacing:0.5px;">${translate('photo_spot_title')}</div>
+                <div style="display:inline-block;background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:20px;font-size:10px;margin-top:4px;border:1px solid rgba(255,255,255,0.4);backdrop-filter:blur(2px);">${translate('photo_spot_badge')}</div>
+            </div>
+            <style>
+                @keyframes pulseGlow { 
+                    0% { transform:scale(1); box-shadow:0 4px 10px rgba(255,143,0,0.4); } 
+                    100% { transform:scale(1.02); box-shadow:0 4px 15px rgba(255,87,34,0.7); } 
+                }
+            </style>
+            ` : ''}
             ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
             <a href="${streetViewUrl}" target="_blank" style="display:block;margin-top:6px;padding:4px 0;font-size:11px;background:#e67e22;color:white;text-decoration:none;border-radius:3px;font-weight:bold;">📷 ${translate('street_view')}</a>
             ${currentMemo ? `
@@ -503,7 +530,21 @@ function removeFromRoutePlan(spotId) {
     badge.textContent = routePlanSpots.length;
     badge.style.display = routePlanSpots.length ? 'inline' : 'none';
 }
-
+async function renderPhotoSpotList() {
+    const listEl = document.getElementById('photo-spot-list');
+    if (!listEl) return;
+    const allSpots = await db.spots.toArray();
+    const spots = allSpots.filter(s => s.is_photo_spot);
+    if (!spots.length) { listEl.innerHTML = ''; return; }
+    listEl.innerHTML = spots.map(spot => {
+        const name = getSpotField(spot, 'name');
+        return `<div style="display:flex;align-items:center;gap:8px;background:#FFF8E1;border:1px solid #FFD54F;border-radius:6px;padding:8px 10px;">
+            <span style="font-size:16px">📸</span>
+            <span style="flex:1;font-size:13px;font-weight:bold;color:#5D4037">${name}</span>
+            <span style="font-size:10px;background:#FF8F00;color:#fff;border-radius:10px;padding:2px 8px;font-weight:bold;">${translate('photo_spot_badge')}</span>
+        </div>`;
+    }).join('');
+}
 function renderRoutePlan() {
     const listEl = document.getElementById('routeplan-list');
     const emptyEl = document.getElementById('routeplan-empty');
