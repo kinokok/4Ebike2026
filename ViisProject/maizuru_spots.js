@@ -1103,7 +1103,9 @@ const maizuruSpotsData = [
   "genre": "ラーメン",
   "lat": 35.4805575,
   "lng": 135.4234868,
-  "image" : "https://cdn-ak.f.st-hatena.com/images/fotolife/y/yuu304810/20220213/20220213203914.jpg"
+  "image" : "https://cdn-ak.f.st-hatena.com/images/fotolife/y/yuu304810/20220213/20220213203914.jpg",
+  "memo" : "舞鶴市に位置するラーメン店で、特に鶏白湯ラーメンが人気のメニューとなっているスポット",
+  "is_photo_spot": true
   },
   {
   "id": "node_1779166021130",
