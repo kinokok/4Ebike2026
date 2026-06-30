@@ -541,42 +541,6 @@ async function renderPhotoSpotList() {
         </div>`;
     }).join('');
 }
-
-async function goToSpotOnMap(spotId) {
-    const spot = await db.spots.get(spotId);
-    if (!spot) return;
-
-    switchTab('tab-search', document.getElementById('tb-search'));
-
-    const nameDisplay = getSpotField(spot, 'name');
-    const currentMemo = getSpotField(spot, 'memo');
-    const popupId = `photo-memo-${spot.id}`;
-    const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${spot.lat},${spot.lng}`;
-    const popup = `<div style="text-align:center;width:180px">
-        <b style="font-size:14px">${nameDisplay}</b><br>
-        ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
-        <a href="${streetViewUrl}" target="_blank" style="display:block;margin-top:6px;padding:4px 0;font-size:11px;background:#e67e22;color:white;text-decoration:none;border-radius:3px;font-weight:bold;">📷 ${translate('street_view')}</a>
-        ${currentMemo ? `
-            <button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none';"
-                    style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%;">
-                ${translate('view_info')}
-            </button>
-            <p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3;">
-                ${currentMemo}
-            </p>
-        ` : ''}
-        <button onclick="addToRoutePlan('${spot.id}')" style="margin-top:6px;padding:4px 8px;font-size:11px;background:#E91E63;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">${translate('route_added')}</button>
-        <div style="font-size:11px;color:#666;margin-top:8px">${getGroupLabel(spot.group)}</div>
-    </div>`;
-
-    L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) })
-        .addTo(markerGroup)
-        .bindPopup(popup)
-        .openPopup();
-
-    map.setView([spot.lat, spot.lng], 16);
-}
-
 function renderRoutePlan() {
     const listEl = document.getElementById('routeplan-list');
     const emptyEl = document.getElementById('routeplan-empty');
