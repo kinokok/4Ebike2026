@@ -14,7 +14,7 @@ const maizuruSpotsData = [
     "memo_en": "Gorozan Observatory sits on Mt. Gorozan and offers panoramic views of Maizuru Bay, especially beautiful at sunset.",
     "memo_ko": "고로잔 전망대는 고로잔 산에 위치하며 마이즈루 만과 주변 풍경을 한눈에 볼 수 있습니다. 특히 석양이 아름답습니다.",
     "memo_zh": "五老山展望台位于五老山，能一览舞鹤湾及周边美景，尤其在夕阳时分格外迷人。",
-    
+    "is_photo_spot": true
   },
   {
     "id": "node_1422960567",
@@ -47,6 +47,7 @@ const maizuruSpotsData = [
     "memo_en": "A former Imperial Japanese Navy lecture hall built in 1933, now exhibiting valuable naval history materials.",
     "memo_ko": "1933년에 건축된 옛 일본 해군 강당으로, 현재 해군 역사를 전시하고 있습니다.",
     "memo_zh": "1933年建造的旧日本海军讲堂，现展示珍贵的海军历史资料。",
+    "is_photo_spot": true
    },
   {
     "id": "node_1435052714",
@@ -268,6 +269,7 @@ const maizuruSpotsData = [
     "memo_en": "",
     "memo_ko": "",
     "memo_zh": "",
+    "is_photo_spot": true
   },
   {
     "id": "node_12952852345",
@@ -339,6 +341,7 @@ const maizuruSpotsData = [
     "memo_en": "",
     "memo_ko": "",
     "memo_zh": "",
+    "is_photo_spot": true
   },
   {
     "id": "way_43881286",
@@ -377,6 +380,7 @@ const maizuruSpotsData = [
     "memo_en": "",
     "memo_ko": "",
     "memo_zh": "",
+    "is_photo_spot": true
   },
   {
     "id": "way_449027186",
@@ -1102,7 +1106,9 @@ const maizuruSpotsData = [
   "genre": "ラーメン",
   "lat": 35.4805575,
   "lng": 135.4234868,
-  "image" : "https://cdn-ak.f.st-hatena.com/images/fotolife/y/yuu304810/20220213/20220213203914.jpg"
+  "image" : "https://cdn-ak.f.st-hatena.com/images/fotolife/y/yuu304810/20220213/20220213203914.jpg",
+  "memo" : "舞鶴市に位置するラーメン店で、特に鶏白湯ラーメンが人気のメニューとなっているスポット",
+  "is_photo_spot": true
   },
   {
   "id": "node_1779166021130",
