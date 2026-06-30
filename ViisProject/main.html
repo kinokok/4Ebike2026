@@ -103,7 +103,7 @@
             </optgroup>
             <optgroup id="optgroup-sightseeing" data-ja="観光・レジャー（赤ピン）" data-en="Sightseeing (Red)" data-ko="관광·레저 (빨간 핀)" data-zh="观光·休闲（红色）" label="観光・レジャー（赤ピン）/ Sightseeing (Red)">
                 <option value="sightseeing" data-ja="観光・史跡" data-en="Sightseeing" data-ko="관광·사적" data-zh="观光·史迹">観光・史跡</option>
-                <option value="activity" data-ja="アクティビティ" data-en="Activity" data-ko="액티비티" data-zh="活动">アクティビティ</option>
+                <option value="activity" data-ja="アクティビティ" data-en="Activity" data-ko="액티비티" data-zh="活동">アクティビティ</option>
             </optgroup>
         </select>
         <input type="text" id="searchKeyword" data-i18n-placeholder="search_placeholder">
@@ -113,6 +113,12 @@
 
     <div id="tab-routes" class="tab-content">
         <div id="route-list"><span id="t-loading" data-i18n-key="loading">データを読み込んでいます...</span></div>
+        <div style="margin-top: 25px; border-top: 2px dashed #ddd; padding-top: 15px;">
+            <h3 style="font-size: 15px; margin: 0 0 10px 0; color: #FF8F00; display: flex; align-items: center; gap: 5px;">
+                📸 <span id="t-photo-title">おすすめ撮影スポット</span>
+            </h3>
+            <div id="photo-spot-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
     </div>
 
     <div id="tab-gen" class="tab-content">
@@ -186,7 +192,7 @@ const translations = {
     min: { ja:'分', en:'min', ko:'분', zh:'分钟' },
     level: { ja:'難易度', en:'Level', ko:'난이도', zh:'难度' },
     show_on_map: { ja:'地図にルートを表示', en:'Show on Map', ko:'지도に表示', zh:'在地图上显示路线' },
-    view_info: { ja:'📖 説明を見る', en:'📖 View Info', ko:'📖 설명 보기', zh:'📖 查看说명' },
+    view_info: { ja:'📖 説明を見る', en:'📖 View Info', ko:'📖 설명 보기', zh:'📖 查看说明' },
     navigate: { ja:'スマホでナビ開始', en:'Navigate', ko:'내비게이션 시작', zh:'开始导航' },
     already_added: { ja:'すでに追加済みです', en:'Already added', ko:'이미 추가됨', zh:'已添加' },
     calculating: { ja:'計算中...', en:'Calculating...', ko:'계산 중...', zh:'计算中...' },
@@ -199,7 +205,10 @@ const translations = {
     google_maps_nav: { ja:'Google マップでナビ開始', en:'Open Google Maps', ko:'Google 지도에서 내비게이션 시작', zh:'在 Google 地图中导航' },
     route_summary: { ja:'約 {dist} km ／ 目安 {time} 分 ／ {count} スポット', en:'Approx. {dist} km / ~{time} min / {count} spots', ko:'약 {dist} km / 약 {time} 분 / {count} 스팟', zh:'约 {dist} 公里 / 预计 {time} 分钟 / {count} 个景点' },
     route_added: { ja:'ルートに追加', en:'Add to Route', ko:'경로에 추가', zh:'添加到路线' },
-    street_view: { ja:'ストリートビュー', en:'Street View', ko:'스트리트 뷰', zh:'街景' }
+    street_view: { ja:'ストリートビュー', en:'Street View', ko:'스트리트 뷰', zh:'街景' },
+    photo_spot_title: { ja:'📸 おすすめ撮影スポット', en:'📸 Recommended Photo Spot', ko:'📸 추천 촬영 스팟', zh:'📸 推荐拍照点' },
+    photo_spot_badge: { ja:'絶景ポイント', en:'Scenic Point', ko:'절경 포인트', zh:'绝佳景点' },
+    photo_spot_view: { ja:'📍 地図で見る', en:'📍 View on Map', ko:'📍 지도에서 보기', zh:'📍 在地图上查看' }
 };
 
 function translate(key, params = {}) {
@@ -258,9 +267,11 @@ function applyLang() {
     updateSelectLabels();
     renderRouteList();
     renderRoutePlan();
+    renderPhotoSpotList();
     if (currentRouteId) drawRoute(currentRouteId);
 }
 
+// ★ fallback: name(ja基準) → name_en の順（修正済み）
 function getSpotField(spot, base) {
     return spot[`${base}_${lang}`] || spot[base] || spot[`${base}_en`] || '';
 }
@@ -339,7 +350,6 @@ function getNumberedIcon(spot, num) {
 
 // ===== Google Maps URL生成 =====
 function buildMapsUrl(coordsArray) {
-    // coordsArray: ["lat,lng", "lat,lng", ...]
     const points = coordsArray.map(coord => {
         const [lat, lng] = coord.split(',');
         return `${parseFloat(lat).toFixed(7)},${parseFloat(lng).toFixed(7)}`;
@@ -385,6 +395,7 @@ async function searchFromLocalDB() {
         const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${spot.lat},${spot.lng}`;
         const popup = `<div style="text-align:center;width:180px">
             <b style="font-size:14px">${nameDisplay}</b><br>
+            ${spot.is_photo_spot ? `<div style="background:linear-gradient(135deg,#FFD54F,#FFB300,#FF8F00);color:#fff;border-radius:6px;padding:6px;font-size:12px;font-weight:bold;margin-bottom:8px;box-shadow:0 3px 6px rgba(0,0,0,0.15);">${translate('photo_spot_title')}<br><span style="font-size:10px;opacity:0.9;">${translate('photo_spot_badge')}</span></div>` : ''}
             ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
             <a href="${streetViewUrl}" target="_blank" style="display:block;margin-top:6px;padding:4px 0;font-size:11px;background:#e67e22;color:white;text-decoration:none;border-radius:3px;font-weight:bold;">📷 ${translate('street_view')}</a>
             ${currentMemo ? `
@@ -462,8 +473,8 @@ async function drawRoute(routeId) {
     map.fitBounds(routePolyline.getBounds(), { padding:[20,20] });
 
     const origin = locationMarker
-    ? [`${locationMarker.getLatLng().lat},${locationMarker.getLatLng().lng}`]
-    : [];
+        ? [`${locationMarker.getLatLng().lat},${locationMarker.getLatLng().lng}`]
+        : [];
     const url = buildMapsUrl([...origin, ...waypoints]);
     window._mapsUrl = url;
     const routeTitle = getRouteField(route, 'title') || route.title;
@@ -505,6 +516,65 @@ function removeFromRoutePlan(spotId) {
     const badge = document.getElementById('routeplan-badge');
     badge.textContent = routePlanSpots.length;
     badge.style.display = routePlanSpots.length ? 'inline' : 'none';
+}
+
+// ===== 映えスポットリスト =====
+async function renderPhotoSpotList() {
+    const listEl = document.getElementById('photo-spot-list');
+    if (!listEl) return;
+    const allSpots = await db.spots.toArray();
+    const spots = allSpots.filter(s => s.is_photo_spot);
+    if (!spots.length) { listEl.innerHTML = ''; return; }
+    listEl.innerHTML = spots.map(spot => {
+        const name = getSpotField(spot, 'name');
+        return `<div style="background:#FFF8E1;border:1px solid #FFD54F;border-radius:6px;padding:8px 10px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                ${spot.image
+                    ? `<img src="${spot.image}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;flex-shrink:0">`
+                    : `<span style="font-size:20px;flex-shrink:0">📸</span>`}
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:bold;color:#5D4037">${name}</div>
+                    <span style="font-size:10px;background:#FF8F00;color:#fff;border-radius:10px;padding:2px 8px;font-weight:bold;display:inline-block;margin-top:2px;">${translate('photo_spot_badge')}</span>
+                </div>
+            </div>
+            <button onclick="goToSpotOnMap('${spot.id}')" style="width:100%;font-size:12px;background:#2196F3;color:#fff;border:none;border-radius:4px;padding:6px;font-weight:bold;cursor:pointer;">${translate('photo_spot_view')}</button>
+        </div>`;
+    }).join('');
+}
+
+async function goToSpotOnMap(spotId) {
+    const spot = await db.spots.get(spotId);
+    if (!spot) return;
+
+    switchTab('tab-search', document.getElementById('tb-search'));
+
+    const nameDisplay = getSpotField(spot, 'name');
+    const currentMemo = getSpotField(spot, 'memo');
+    const popupId = `photo-memo-${spot.id}`;
+    const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${spot.lat},${spot.lng}`;
+    const popup = `<div style="text-align:center;width:180px">
+        <b style="font-size:14px">${nameDisplay}</b><br>
+        ${spot.image ? `<img src="${spot.image}" style="width:100%;height:auto;border-radius:4px;margin-top:6px">` : ''}
+        <a href="${streetViewUrl}" target="_blank" style="display:block;margin-top:6px;padding:4px 0;font-size:11px;background:#e67e22;color:white;text-decoration:none;border-radius:3px;font-weight:bold;">📷 ${translate('street_view')}</a>
+        ${currentMemo ? `
+            <button onclick="document.getElementById('${popupId}').style.display='block';this.style.display='none';"
+                    style="margin-top:8px;padding:4px 8px;font-size:11px;background:#2196F3;color:white;border:none;border-radius:3px;cursor:pointer;width:100%;">
+                ${translate('view_info')}
+            </button>
+            <p id="${popupId}" style="display:none;font-size:11px;color:#555;text-align:left;margin:8px 0 0 0;background:#f9f9f9;padding:6px;border-radius:3px;border-left:3px solid #2196F3;">
+                ${currentMemo}
+            </p>
+        ` : ''}
+        <button onclick="addToRoutePlan('${spot.id}')" style="margin-top:6px;padding:4px 8px;font-size:11px;background:#E91E63;color:white;border:none;border-radius:3px;cursor:pointer;width:100%">${translate('route_added')}</button>
+        <div style="font-size:11px;color:#666;margin-top:8px">${getGroupLabel(spot.group)}</div>
+    </div>`;
+
+    L.marker([spot.lat, spot.lng], { icon: getIconForSpot(spot) })
+        .addTo(markerGroup)
+        .bindPopup(popup)
+        .openPopup();
+
+    map.setView([spot.lat, spot.lng], 16);
 }
 
 function renderRoutePlan() {
@@ -594,7 +664,11 @@ async function generateRoute() {
     const timeMin = Math.round(totalDist / 12 * 60 + best.length * 15);
 
     const wpCoords = best.map(s => `${s.lat},${s.lng}`);
-    const mapsUrl = buildMapsUrl(wpCoords);
+    // ★ 現在地を出発点として追加
+    const origin = locationMarker
+        ? [`${locationMarker.getLatLng().lat},${locationMarker.getLatLng().lng}`]
+        : [];
+    const mapsUrl = buildMapsUrl([...origin, ...wpCoords]);
 
     const chips = best.map((s, i) => {
         const isFixed = routePlanSpots.find(f => f.id === s.id);
