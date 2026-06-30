@@ -47,6 +47,7 @@ const maizuruSpotsData = [
     "memo_en": "A former Imperial Japanese Navy lecture hall built in 1933, now exhibiting valuable naval history materials.",
     "memo_ko": "1933년에 건축된 옛 일본 해군 강당으로, 현재 해군 역사를 전시하고 있습니다.",
     "memo_zh": "1933年建造的旧日本海军讲堂，现展示珍贵的海军历史资料。",
+    "is_photo_spot": true
    },
   {
     "id": "node_1435052714",
@@ -340,6 +341,7 @@ const maizuruSpotsData = [
     "memo_en": "",
     "memo_ko": "",
     "memo_zh": "",
+    "is_photo_spot": true
   },
   {
     "id": "way_43881286",
@@ -378,6 +380,7 @@ const maizuruSpotsData = [
     "memo_en": "",
     "memo_ko": "",
     "memo_zh": "",
+    "is_photo_spot": true
   },
   {
     "id": "way_449027186",
